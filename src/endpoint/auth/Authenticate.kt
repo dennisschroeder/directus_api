@@ -8,6 +8,7 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import java.util.*
+import javax.lang.model.type.NullType
 
 fun Route.authenticate() {
     post("/authenticate") {
@@ -20,7 +21,9 @@ fun Route.authenticate() {
         val user = users[post.name]
 
         if (user?.password != post.password) throw InvalidCredentialsException("Invalid credentials")
-        call.respond(mapOf("token" to DirectusJWT.sign(user.name)))
+
+        val response = SuccessResponse<Map<String, String>, NullType>(mapOf("token" to DirectusJWT.sign(user.name)))
+        call.respond(response)
     }
 }
 

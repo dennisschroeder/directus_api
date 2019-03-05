@@ -14,15 +14,20 @@ import io.ktor.features.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.jwt
 import io.ktor.gson.*
+import io.ktor.util.KtorExperimentalAPI
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
+@KtorExperimentalAPI
+@KtorExperimentalLocationsAPI
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+
+    if (!testing)println("Application Started")
 
     DatabaseFactory.init()
     val tables = listOf<Table>(DirectusUsers, DirectusSettings)
@@ -54,7 +59,8 @@ fun Application.module(testing: Boolean = false) {
 
     install(StatusPages) {
         exception<InvalidCredentialsException> { exception ->
-            call.respond(HttpStatusCode.Unauthorized, mapOf("OK" to false, "error" to (exception.message ?: "")))
+            val message = ErrorResponse(HttpStatusCode.Unauthorized.value, exception.message ?: HttpStatusCode.Unauthorized.description)
+            call.respond(HttpStatusCode.Unauthorized, mapOf("error" to message))
         }
     }
 
