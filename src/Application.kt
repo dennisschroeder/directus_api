@@ -3,19 +3,31 @@ package com.directus
 import com.directus.endpoint.auth.InvalidCredentialsException
 import com.directus.endpoint.auth.authenticate
 import com.directus.jwt.DirectusJWT
-import com.directus.model.*
+import com.directus.model.DirectusSettings
+import com.directus.model.DirectusUsers
+import com.directus.model.ErrorResponse
 import com.directus.service.DatabaseFactory
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.http.*
-import io.ktor.locations.*
-import io.ktor.features.*
-import io.ktor.auth.*
+import io.ktor.application.Application
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.auth.Authentication
+import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.jwt.jwt
-import io.ktor.gson.*
+import io.ktor.features.*
+import io.ktor.gson.gson
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.locations.Locations
+import io.ktor.response.respond
+import io.ktor.response.respondText
+import io.ktor.routing.Routing
+import io.ktor.routing.get
+import io.ktor.routing.route
+import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
-import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -30,7 +42,7 @@ fun Application.module(testing: Boolean = false) {
     if (!testing)println("Application Started")
 
     DatabaseFactory.init()
-    val tables = listOf<Table>(DirectusUsers, DirectusSettings)
+    val tables = listOf(DirectusUsers, DirectusSettings)
     DatabaseFactory.createTables(tables = tables)
 
     transaction {

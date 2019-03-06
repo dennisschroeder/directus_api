@@ -2,9 +2,9 @@ package com.directus.repository
 
 import com.directus.model.DirectusSetting
 import com.directus.model.DirectusSettings
-import repository.RepositoryInterface
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.select
+import repository.RepositoryInterface
 
 object SettingsRepository: RepositoryInterface<DirectusSettings, DirectusSetting> {
     override val table =  DirectusSettings
@@ -20,6 +20,5 @@ object SettingsRepository: RepositoryInterface<DirectusSettings, DirectusSetting
         key = row[DirectusSettings.key],
         value = row[DirectusSettings.value]
     )
-
 }
 

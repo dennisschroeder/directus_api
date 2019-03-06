@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection")
+
 package com.directus.jwt
 
 import java.util.*
@@ -5,6 +7,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 
+@Suppress("SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection")
 object DirectusJWT {
     private const val secret = "aksdjw390dsfasdköasdköalsdkasöld"
     private const val validityInMs = 36_000_00 * 1 // 1 hour
