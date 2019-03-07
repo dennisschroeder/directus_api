@@ -2,23 +2,21 @@ package com.directus.repository
 
 import com.directus.model.DirectusSetting
 import com.directus.model.DirectusSettings
-import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import repository.RepositoryInterface
 
 object SettingsRepository: RepositoryInterface<DirectusSettings, DirectusSetting> {
     override val table =  DirectusSettings
 
-    suspend fun getById(id: Int): DirectusSetting? = dbQuery {
-        table.select {
-            (table.id eq id)
-        }.mapNotNull { mapToModel(it) }.singleOrNull()
+    override suspend fun getAll(): Collection<DirectusSetting> {
+        return table.selectAll().mapNotNull { null }
     }
 
-    override fun mapToModel(row: ResultRow) = DirectusSetting(
-        id = row[DirectusSettings.id],
-        key = row[DirectusSettings.key],
-        value = row[DirectusSettings.value]
-    )
+    override suspend fun getById(id: Int): DirectusSetting? = dbQuery {
+        table.select {
+            (table.id eq id)
+        }.mapNotNull { DirectusSetting.createFromResultRow(it) }.singleOrNull()
+    }
 }
 
