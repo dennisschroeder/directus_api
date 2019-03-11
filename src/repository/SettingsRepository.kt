@@ -1,22 +1,12 @@
 package com.directus.repository
 
-import com.directus.model.DirectusSetting
-import com.directus.model.DirectusSettings
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import domain.model.Setting
+import domain.model.Settings
 import repository.RepositoryInterface
 
-object SettingsRepository: RepositoryInterface<DirectusSettings, DirectusSetting> {
-    override val table =  DirectusSettings
-
-    override suspend fun getAll(): Collection<DirectusSetting> {
-        return table.selectAll().mapNotNull { null }
+object SettingsRepository: RepositoryInterface<Settings> {
+    suspend fun getByValue(value: String) = asyncQuery {
+        Setting.find { Settings.value eq value }.singleOrNull()
     }
 
-    override suspend fun getById(id: Int): DirectusSetting? = dbQuery {
-        table.select {
-            (table.id eq id)
-        }.mapNotNull { DirectusSetting.createFromResultRow(it) }.singleOrNull()
-    }
 }
-

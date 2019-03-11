@@ -2,10 +2,11 @@
 
 package com.directus.jwt
 
-import java.util.*
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import domain.model.Users.email
+import java.util.*
 
 @Suppress("SpellCheckingInspection", "SpellCheckingInspection", "SpellCheckingInspection")
 object DirectusJWT {
@@ -15,7 +16,7 @@ object DirectusJWT {
     val verifier: JWTVerifier = JWT.require(algorithm).build()
 
     fun sign(name: String): String = JWT.create()
-        .withClaim("name", name)
+        .withClaim("email", email.name)
         .withExpiresAt(getExpiration())
         .sign(algorithm)
 
