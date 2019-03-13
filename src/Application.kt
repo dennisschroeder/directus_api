@@ -1,8 +1,9 @@
 package com.directus
 
+import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.InvalidCredentialsException
 import com.directus.endpoint.auth.authentication
-import com.directus.endpoint.base
+import com.directus.endpoint.root
 import com.directus.jwt.DirectusJWT
 import domain.model.ErrorResponse
 import io.ktor.application.Application
@@ -23,16 +24,17 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.response.respond
-import io.ktor.response.respondText
 import io.ktor.routing.Routing
+import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.runBlocking
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
-fun Application.main(testing: Boolean = false) {
+fun Application.main(testing: Boolean = false) = runBlocking {
 
     install(Locations)
     install(DefaultHeaders)
@@ -76,17 +78,16 @@ fun Application.main(testing: Boolean = false) {
 
         val projectName = environment.config.propertyOrNull("directus.projectName")?.getString() ?: "_"
 
-        base(projectName) {
+        root(projectName) {
             route("/auth") {
                 authentication()
             }
         }
 
         authenticate {
-            route("/", HttpMethod.Get) {
-                handle {
-
-                    call.respondText("Success")
+            route("/") {
+                get {
+                    call.respond(UserService.Async.getUser(1)!!)
                 }
             }
         }

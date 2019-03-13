@@ -1,13 +1,19 @@
 package com.directus
 
-import io.ktor.http.*
-import kotlin.test.*
-import io.ktor.server.testing.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
+import io.ktor.server.testing.withTestApplication
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ApplicationTest {
     @Test
     fun testRoot() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ main(testing = true) }) {
             handleRequest(HttpMethod.Get, "/").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("HELLO DENNIS!", response.content)
@@ -17,7 +23,7 @@ class ApplicationTest {
 
     @Test
     fun testLogin() {
-        withTestApplication({ module(testing = true) }) {
+        withTestApplication({ main(testing = true) }) {
             val credentials = """
                                 {
                                    "name":"test",
