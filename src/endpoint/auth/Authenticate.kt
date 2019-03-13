@@ -1,11 +1,11 @@
 package com.directus.endpoint.auth
 
 import com.directus.jwt.DirectusJWT
-import domain.model.Credentials
 import domain.model.SuccessResponse
 import domain.model.User
 import domain.model.Users
 import io.ktor.application.call
+import io.ktor.auth.Credential
 import io.ktor.auth.authenticate
 import io.ktor.request.receive
 import io.ktor.response.respond
@@ -38,3 +38,4 @@ fun Route.authentication() {
 }
 
 class InvalidCredentialsException(message: String) : RuntimeException(message)
+class Credentials(val email: String, val password: String): Credential
