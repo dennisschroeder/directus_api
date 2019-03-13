@@ -8,7 +8,6 @@ buildscript {
     
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        
     }
 }
 
@@ -30,6 +29,7 @@ repositories {
     mavenLocal()
     jcenter()
     maven { url 'https://kotlin.bintray.com/ktor' }
+    maven { url "https://jitpack.io" }
 }
 
 dependencies {
@@ -44,5 +44,8 @@ dependencies {
     compile "com.h2database:h2:$h2_version"
     compile "org.jetbrains.exposed:exposed:$exposed_version"
     compile 'com.zaxxer:HikariCP:2.7.8'
+    compile 'org.mindrot:jbcrypt:0.4'
+    implementation('com.github.rnett:exposedgson:1.1.0')
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
+
 }
