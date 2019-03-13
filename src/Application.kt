@@ -29,6 +29,7 @@ import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.exposed.sql.transactions.transaction
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -87,7 +88,18 @@ fun Application.main(testing: Boolean = false) = runBlocking {
         authenticate {
             route("/") {
                 get {
-                    call.respond(UserService.Async.getUser(1)!!)
+
+                    val admin = UserService.Async.createBuilder()
+
+                    val new = transaction {
+                        admin.new {
+                            email = "dennis@me.com"
+                            password = "test"
+                        }
+                    }
+
+                    call.respond(UserService.Async.getUser(new.id.value)!!)
+
                 }
             }
         }
