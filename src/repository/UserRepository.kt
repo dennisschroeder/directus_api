@@ -16,8 +16,4 @@ object UserRepository : RepositoryInterface<User> {
     suspend fun findByEmail(email: String) = asyncQuery {
         User.find { Users.email eq email }.singleOrNull()
     }
-
-    suspend fun findByFieldName(fieldName: String) = asyncQuery {
-        User.all().toList()
-    }
 }

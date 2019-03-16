@@ -46,6 +46,7 @@ dependencies {
     compile 'com.zaxxer:HikariCP:2.7.8'
     compile 'org.mindrot:jbcrypt:0.4'
     implementation('com.github.rnett:exposedgson:1.1.0')
+    compile "mysql:mysql-connector-java:5.1.46"
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
 
 }

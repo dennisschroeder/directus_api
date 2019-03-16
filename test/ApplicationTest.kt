@@ -26,7 +26,7 @@ class ApplicationTest {
         withTestApplication({ main(testing = true) }) {
             val credentials = """
                                 {
-                                   "name":"test",
+                                   "email":"test",
                                    "password": "test"
                                 }
                             """

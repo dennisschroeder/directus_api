@@ -3,6 +3,7 @@ package domain.model
 import com.google.gson.annotations.JsonAdapter
 import com.rnett.exposedgson.ExposedGSON
 import com.rnett.exposedgson.ExposedTypeAdapter
+import io.ktor.auth.Principal
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -31,7 +32,7 @@ object Users: IntIdTable("directus_user") {
 
 @JsonAdapter(ExposedTypeAdapter::class)
 @ExposedGSON.JsonDatabaseIdField("id")
-open class User(id: EntityID<Int>) : IntEntity(id) {
+open class User(id: EntityID<Int>) : IntEntity(id), Principal {
     companion object : IntEntityClass<User>(Users)
 
     var status by Users.status

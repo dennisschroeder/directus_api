@@ -1,5 +1,8 @@
 package domain.model
 
+import com.google.gson.annotations.JsonAdapter
+import com.rnett.exposedgson.ExposedGSON
+import com.rnett.exposedgson.ExposedTypeAdapter
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -10,6 +13,8 @@ object Settings: IntIdTable("directus_setting") {
     val value = text("value")
 }
 
+@JsonAdapter(ExposedTypeAdapter::class)
+@ExposedGSON.JsonDatabaseIdField("id")
 open class Setting(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Setting>(Settings)
 
