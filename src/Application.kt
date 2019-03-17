@@ -31,7 +31,7 @@ import io.ktor.util.KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
-fun Application.main(testing: Boolean = false)  {
+fun Application.main(testing: Boolean = false) {
 
     install(Locations)
     install(DefaultHeaders)
@@ -56,7 +56,9 @@ fun Application.main(testing: Boolean = false)  {
         jwt {
             verifier(DirectusJWT.verifier)
             validate {
-             it.payload.getClaim("email").asString().let { email -> UserService.getUserByEmail(email) }
+                it.payload.getClaim("email").asString().let { email ->
+                    UserService.getUserByEmail(email)
+                }
             }
         }
     }
@@ -79,7 +81,7 @@ fun Application.main(testing: Boolean = false)  {
             route("/") {
                 get {
                     val user = call.user!!
-                    call.respondText { user.email}
+                    call.respondText { user.email }
 
                 }
             }

@@ -6,16 +6,15 @@ import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.exception.InvalidCredentialsException
 import com.directus.endpoint.auth.exception.UserNotFoundException
 import com.directus.errorResponse
+import com.directus.jwt.DirectusJWT
 import com.directus.successResponse
 import domain.model.User
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
-import io.ktor.auth.authenticate
 import io.ktor.auth.authentication
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
-import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.post
 
@@ -32,11 +31,19 @@ fun Route.authentication() {
         }
     }
 
-    authenticate {
-        post("/refresh") {
-            call.respondText("Nothing")
+    post("/refresh") {
+        val body = call.receive<Map<String, String>>()
+
+        if (body["token"] == null) {
+            throw com.directus.endpoint.exception.BadRequestException("Missing valid token")
         }
+
+        val verifier = DirectusJWT.verifier
+        val email = verifier.verify(body["token"]).getClaim("email").asString()
+
+        call.successResponse(HttpStatusCode.OK, JwtToken(email))
     }
+
 }
 
 fun StatusPages.Configuration.failedAuth() {
@@ -49,4 +56,8 @@ fun StatusPages.Configuration.failedAuth() {
     }
 }
 
+/**
+ * Adds the authenticated user to the call pipeline
+ * The user can be accessed with "call.user"!
+ */
 val ApplicationCall.user get() = authentication.principal<User>()

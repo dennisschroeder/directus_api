@@ -31,7 +31,7 @@ class ApplicationTest {
                                 }
                             """
 
-            val call = handleRequest(HttpMethod.Post, "/auth/authenticate") {
+            val call = handleRequest(HttpMethod.Post, "_/auth/authenticate") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 setBody(credentials)
             }
