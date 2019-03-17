@@ -1,5 +1,9 @@
+# WORK IN PROGRESS
+Please come back later ... 
+
 # DIRECTUS CMS (API)
 A RESTful  database wrapper for Directus CMS (API) written in Kotlin with Ktor.
+More information about directus can be found here: https://github.com/directus/api.
 
 Uses:
 
