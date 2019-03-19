@@ -1,10 +1,15 @@
 package com.directus.endpoint.auth
 
+import com.auth0.jwt.exceptions.TokenExpiredException
+import com.directus.ResetPassword
+import com.directus.domain.model.AuthToken
 import com.directus.domain.model.Credentials
-import com.directus.domain.model.JwtToken
+import com.directus.domain.model.PasswordResetToken
 import com.directus.domain.service.UserService
+import com.directus.endpoint.auth.exception.ExpiredTokenException
 import com.directus.endpoint.auth.exception.InvalidCredentialsException
 import com.directus.endpoint.auth.exception.UserNotFoundException
+import com.directus.endpoint.exception.BadRequestException
 import com.directus.errorResponse
 import com.directus.jwt.DirectusJWT
 import com.directus.successResponse
@@ -14,10 +19,15 @@ import io.ktor.application.call
 import io.ktor.auth.authentication
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
+import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.locations.get
 import io.ktor.request.receive
 import io.ktor.routing.Route
 import io.ktor.routing.post
+import io.ktor.routing.route
+import org.apache.commons.mail.HtmlEmail
 
+@KtorExperimentalLocationsAPI
 fun Route.authentication() {
     post("/authenticate") {
         val credentials = call.receive<Credentials>()
@@ -27,23 +37,37 @@ fun Route.authentication() {
             user == null -> throw UserNotFoundException("User not found!")
             !user.authenticate(credentials.password) -> throw InvalidCredentialsException("Wrong Credentials")
 
-            else -> call.successResponse(HttpStatusCode.OK, JwtToken(user.email))
+            else -> call.successResponse(HttpStatusCode.OK, AuthToken(user))
         }
     }
 
     post("/refresh") {
         val body = call.receive<Map<String, String>>()
 
-        if (body["token"] == null) {
-            throw com.directus.endpoint.exception.BadRequestException("Missing valid token")
-        }
-
+        val oldToken = body["token"] ?: throw BadRequestException("Missing valid token")
         val verifier = DirectusJWT.verifier
-        val email = verifier.verify(body["token"]).getClaim("email").asString()
+        val userId = verifier.verify(oldToken).getClaim("userId").asInt()
+        val user = UserService.getUser(userId) ?: throw UserNotFoundException("User not found!")
 
-        call.successResponse(HttpStatusCode.OK, JwtToken(email))
+        call.successResponse(HttpStatusCode.OK, AuthToken(user))
     }
 
+    route("/password") {
+        post("/request") {
+            val body = call.receive<Map<String, String>>()
+
+            val email = body["email"] ?: throw BadRequestException("Missing email address")
+            val user = UserService.getUserByEmail(email) ?: throw UserNotFoundException("User not found!")
+
+            call.successResponse(HttpStatusCode.OK, PasswordResetToken(user))
+        }
+
+        get<ResetPassword> { token ->
+            val mail = HtmlEmail()
+            call.successResponse(HttpStatusCode.OK, token)
+
+        }
+    }
 }
 
 fun StatusPages.Configuration.failedAuth() {
@@ -52,6 +76,14 @@ fun StatusPages.Configuration.failedAuth() {
     }
 
     exception<UserNotFoundException> { exception ->
+        call.errorResponse(exception)
+    }
+
+    exception<TokenExpiredException> {
+        throw TokenExpiredException("Token Expired")
+    }
+
+    exception<ExpiredTokenException>  { exception ->
         call.errorResponse(exception)
     }
 }
