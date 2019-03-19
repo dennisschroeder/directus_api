@@ -3,7 +3,6 @@ package com.directus
 import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
-import com.directus.endpoint.auth.user
 import com.directus.endpoint.root
 import com.directus.jwt.DirectusJWT
 import io.ktor.application.Application
@@ -69,9 +68,7 @@ fun Application.main(testing: Boolean = false) {
 
     install(Routing) {
 
-        val projectName = environment.config.property("directus.projectName").getString()
-
-        root(projectName) {
+        root(ConfigService.projectKey!!) {
             route("/auth") {
                 authentication()
             }
@@ -80,8 +77,10 @@ fun Application.main(testing: Boolean = false) {
         authenticate {
             routing {
                 get("/")  {
-                    val user = call.user!!
-                    call.respondText { user.email }
+
+                    val host = ConfigService.database?.host
+
+                    call.respondText { "Setting: $host" }
                 }
             }
         }

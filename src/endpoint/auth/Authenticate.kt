@@ -25,7 +25,7 @@ import io.ktor.request.receive
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
-import org.apache.commons.mail.HtmlEmail
+import org.apache.commons.mail.SimpleEmail
 
 @KtorExperimentalLocationsAPI
 fun Route.authentication() {
@@ -63,7 +63,14 @@ fun Route.authentication() {
         }
 
         get<ResetPassword> { token ->
-            val mail = HtmlEmail()
+            SimpleEmail().apply {
+                hostName = "localhost"
+                setSmtpPort(1025)
+                setFrom("admin@example.com")
+                subject = "Your Resettoken"
+                setMsg("Hello, pls use this token: ${token.resetToken}")
+                addTo("dennisschroeder@me.com")
+            }.send()
             call.successResponse(HttpStatusCode.OK, token)
 
         }
