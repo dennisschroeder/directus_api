@@ -11,9 +11,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ApplicationTest {
+
+
     @Test
     fun testRoot() {
-        withTestApplication({ main(testing = true) }) {
+        withTestApplication({ boot(testing = true) }) {
             handleRequest(HttpMethod.Get, "/").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("HELLO DENNIS!", response.content)
@@ -23,25 +25,21 @@ class ApplicationTest {
 
     @Test
     fun testLogin() {
-        withTestApplication({ main(testing = true) }) {
+        withTestApplication({ boot(testing = true) }) {
             val credentials = """
                                 {
-                                   "email":"test",
-                                   "password": "test"
+                                    "email": "admin@example.com",
+                                    "password": "password"
                                 }
                             """
 
-            val call = handleRequest(HttpMethod.Post, "_/auth/authenticate") {
+            val call = handleRequest(HttpMethod.Post, "/_/auth/authenticate") {
                 addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 setBody(credentials)
             }
 
             call.apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals(
-                    "token",
-                    response.content
-                )
             }
         }
     }
