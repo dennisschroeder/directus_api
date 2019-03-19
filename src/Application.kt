@@ -12,10 +12,7 @@ import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.jwt
-import io.ktor.features.CORS
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -25,6 +22,7 @@ import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
+import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 
 @KtorExperimentalAPI
@@ -33,6 +31,7 @@ import io.ktor.util.KtorExperimentalAPI
 @kotlin.jvm.JvmOverloads
 fun Application.main(testing: Boolean = false) {
 
+    install(DataConversion)
     install(Locations)
     install(DefaultHeaders)
 
@@ -55,9 +54,10 @@ fun Application.main(testing: Boolean = false) {
     install(Authentication) {
         jwt {
             verifier(DirectusJWT.verifier)
+
             validate {
-                it.payload.getClaim("email").asString().let { email ->
-                    UserService.getUserByEmail(email)
+                it.payload.getClaim("userId").asInt().let { userId ->
+                    UserService.getUser(userId)
                 }
             }
         }
@@ -78,14 +78,12 @@ fun Application.main(testing: Boolean = false) {
         }
 
         authenticate {
-            route("/") {
-                get {
+            routing {
+                get("/")  {
                     val user = call.user!!
                     call.respondText { user.email }
-
                 }
             }
         }
     }
 }
-
