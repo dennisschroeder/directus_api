@@ -47,6 +47,7 @@ dependencies {
     compile 'org.mindrot:jbcrypt:0.4'
     implementation('com.github.rnett:exposedgson:1.1.0')
     compile "mysql:mysql-connector-java:5.1.46"
+    compile "org.apache.commons:commons-email:$commonsemail_version"
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
 
 }
