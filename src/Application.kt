@@ -1,17 +1,21 @@
 package com.directus
 
+import com.directus.auth.AuthService
 import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
+import com.directus.endpoint.auth.user
 import com.directus.endpoint.root
-import com.directus.jwt.DirectusJWT
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
 import io.ktor.auth.jwt.jwt
-import io.ktor.features.*
+import io.ktor.features.CORS
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.DefaultHeaders
+import io.ktor.features.StatusPages
 import io.ktor.gson.gson
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -30,7 +34,6 @@ import io.ktor.util.KtorExperimentalAPI
 @kotlin.jvm.JvmOverloads
 fun Application.main(testing: Boolean = false) {
 
-    install(DataConversion)
     install(Locations)
     install(DefaultHeaders)
 
@@ -52,8 +55,7 @@ fun Application.main(testing: Boolean = false) {
 
     install(Authentication) {
         jwt {
-            verifier(DirectusJWT.verifier)
-
+            verifier(AuthService.verifier)
             validate {
                 it.payload.getClaim("userId").asInt().let { userId ->
                     UserService.getUser(userId)
@@ -67,7 +69,6 @@ fun Application.main(testing: Boolean = false) {
     }
 
     install(Routing) {
-
         root(ConfigService.projectKey!!) {
             route("/auth") {
                 authentication()
@@ -76,11 +77,11 @@ fun Application.main(testing: Boolean = false) {
 
         authenticate {
             routing {
-                get("/")  {
+                get("/") {
 
-                    val host = ConfigService.database?.host
+                    val email = call.user?.email
 
-                    call.respondText { "Setting: $host" }
+                    call.respondText { "Usermaail: $email" }
                 }
             }
         }

@@ -9,3 +9,8 @@
       environment:
         MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         MYSQL_DATABASE: 'directus'
+    mailhog:
+      image: mailhog/mailhog
+      ports:
+        - "127.0.0.1:${MAILHOG_PORT_WEB:-8025}:8025"
+        - "127.0.0.1:${MAILHOG_PORT_SMTP:-1025}:1025"

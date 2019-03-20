@@ -2,6 +2,7 @@ package com.directus.endpoint.auth
 
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.directus.ResetPassword
+import com.directus.auth.AuthService
 import com.directus.domain.model.AuthToken
 import com.directus.domain.model.Credentials
 import com.directus.domain.model.PasswordResetToken
@@ -11,7 +12,6 @@ import com.directus.endpoint.auth.exception.InvalidCredentialsException
 import com.directus.endpoint.auth.exception.UserNotFoundException
 import com.directus.endpoint.exception.BadRequestException
 import com.directus.errorResponse
-import com.directus.jwt.DirectusJWT
 import com.directus.successResponse
 import domain.model.User
 import io.ktor.application.ApplicationCall
@@ -45,7 +45,7 @@ fun Route.authentication() {
         val body = call.receive<Map<String, String>>()
 
         val oldToken = body["token"] ?: throw BadRequestException("Missing valid token")
-        val verifier = DirectusJWT.verifier
+        val verifier = AuthService.verifier
         val userId = verifier.verify(oldToken).getClaim("userId").asInt()
         val user = UserService.getUser(userId) ?: throw UserNotFoundException("User not found!")
 

@@ -34,7 +34,7 @@ object Database {
 
     private fun mySqlConfig(): HikariDataSource {
         val config = HikariConfig()
-        config.jdbcUrl="jdbc:mysql://localhost:32770/directus"
+        config.jdbcUrl="jdbc:mysql://localhost:32768/directus"
         config.username = "root"
         config.password=""
         config.maximumPoolSize=10

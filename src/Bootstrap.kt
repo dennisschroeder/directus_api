@@ -1,5 +1,6 @@
 package com.directus
 
+import com.directus.auth.AuthConfig
 import com.directus.domain.model.DatabaseConfig
 import com.directus.domain.service.UserService
 import com.directus.repository.Database
@@ -32,6 +33,11 @@ fun Application.boot(testing: Boolean = false) {
         password = config.propertyOrNull("directus.database.password")?.getString() ?: "root"
     )
 
+    ConfigService.auth = AuthConfig(
+        secretKey = config.propertyOrNull("directus.auth.secretKey")?.getString()?: "oUa7VfxSkhzHJFmmLKFQ8kThWYPvpd3a",
+        publicKey = config.propertyOrNull("directus.auth.publicKey")?.getString()?: "ie2PupjbvRcXs8GQ8yYc8Tw8wAdburbl"
+    )
+
     Database.initMysql()
     Database.createTables(Users, Settings)
 
@@ -41,7 +47,6 @@ fun Application.boot(testing: Boolean = false) {
             value = "Directus"
         }
     }
-
 
     launch {
 

@@ -10,7 +10,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
 import org.mindrot.jbcrypt.BCrypt
 
-object Users: IntIdTable("directus_user") {
+object Users : IntIdTable("directus_user") {
     val status = varchar("status", 16).default("draft")
     val firstName = varchar("firstName", 50).nullable()
     val lastName = varchar("lastName", 50).nullable()
@@ -57,5 +57,5 @@ open class User(id: EntityID<Int>) : IntEntity(id), Principal {
     var lastPage by Users.lastPage
     var externalId by Users.externalId
 
-    fun authenticate(rawPassword: String) = BCrypt.checkpw(rawPassword, this.password)
+    fun authenticate(rawPassword: String) = BCrypt.checkpw(rawPassword, password)
 }

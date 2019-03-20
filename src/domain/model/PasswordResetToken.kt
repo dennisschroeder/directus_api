@@ -1,8 +1,8 @@
 package com.directus.domain.model
 
-import com.directus.jwt.DirectusJWT
+import com.directus.auth.AuthService
 import domain.model.User
 
 class PasswordResetToken (user: User) {
-    var token = DirectusJWT.signPasswordRequestToken(user=user)
+    var token = AuthService.signPasswordRequestToken(user=user)
 }
