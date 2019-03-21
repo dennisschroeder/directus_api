@@ -25,7 +25,6 @@ import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
-import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 
 @KtorExperimentalAPI
@@ -56,9 +55,14 @@ fun Application.main(testing: Boolean = false) {
     install(Authentication) {
         jwt {
             verifier(AuthService.verifier)
-            validate {
-                it.payload.getClaim("userId").asInt().let { userId ->
-                    UserService.getUser(userId)
+            validate { credentials ->
+
+                when {
+                    credentials.payload.getClaim("type").asString() != "auth" -> return@validate null
+                    credentials.payload.getClaim("key").asString() != ConfigService.auth!!.publicKey -> return@validate null
+                    else -> credentials.payload.getClaim("userId").asInt().let { userId ->
+                        UserService.getUser(userId)
+                    }
                 }
             }
         }
@@ -76,14 +80,13 @@ fun Application.main(testing: Boolean = false) {
         }
 
         authenticate {
-            routing {
-                get("/") {
 
-                    val email = call.user?.email
+            get("/") {
+                val email = call.user?.email
 
-                    call.respondText { "Usermaail: $email" }
-                }
+                call.respondText { "Usermaail: $email" }
             }
+
         }
     }
 }
