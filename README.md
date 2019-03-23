@@ -14,3 +14,5 @@ https://github.com/google/gson
 https://github.com/rnett/exposedgson
 
 https://github.com/brettwooldridge/HikariCP
+
+https://vertx.io/docs/vertx-mail-client/kotlin/

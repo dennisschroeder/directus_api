@@ -3,15 +3,16 @@ package com.directus.endpoint.auth
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.directus.ResetPassword
 import com.directus.auth.AuthService
-import com.directus.domain.model.AuthToken
+import com.directus.auth.AuthToken
+import com.directus.auth.PasswordResetToken
 import com.directus.domain.model.Credentials
-import com.directus.domain.model.PasswordResetToken
 import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.exception.ExpiredTokenException
 import com.directus.endpoint.auth.exception.InvalidCredentialsException
 import com.directus.endpoint.auth.exception.UserNotFoundException
 import com.directus.endpoint.exception.BadRequestException
 import com.directus.errorResponse
+import com.directus.mail.MailService
 import com.directus.successResponse
 import domain.model.User
 import io.ktor.application.ApplicationCall
@@ -25,31 +26,31 @@ import io.ktor.request.receive
 import io.ktor.routing.Route
 import io.ktor.routing.post
 import io.ktor.routing.route
-import org.apache.commons.mail.SimpleEmail
 
 @KtorExperimentalLocationsAPI
 fun Route.authentication() {
     post("/authenticate") {
         val credentials = call.receive<Credentials>()
+        val projectKey = call.parameters["projectKey"]!!
         val user = UserService.getUserByEmail(credentials.email)
 
         when {
             user == null -> throw UserNotFoundException("User not found!")
             !user.authenticate(credentials.password) -> throw InvalidCredentialsException("Wrong Credentials")
 
-            else -> call.successResponse(HttpStatusCode.OK, AuthToken(user))
+            else -> call.successResponse(HttpStatusCode.OK, AuthToken(user, projectKey))
         }
     }
 
     post("/refresh") {
         val body = call.receive<Map<String, String>>()
-
+        val projectKey = call.parameters["projectKey"]!!
         val oldToken = body["token"] ?: throw BadRequestException("Missing valid token")
         val verifier = AuthService.verifier
         val userId = verifier.verify(oldToken).getClaim("userId").asInt()
         val user = UserService.getUser(userId) ?: throw UserNotFoundException("User not found!")
 
-        call.successResponse(HttpStatusCode.OK, AuthToken(user))
+        call.successResponse(HttpStatusCode.OK, AuthToken(user, projectKey))
     }
 
     route("/password") {
@@ -63,16 +64,16 @@ fun Route.authentication() {
         }
 
         get<ResetPassword> { token ->
-            SimpleEmail().apply {
-                hostName = "localhost"
-                setSmtpPort(1025)
-                setFrom("admin@example.com")
-                subject = "Your Resettoken"
-                setMsg("Hello, pls use this token: ${token.resetToken}")
-                addTo("dennisschroeder@me.com")
-            }.send()
-            call.successResponse(HttpStatusCode.OK, token)
+            val transporter = MailService.createTransporter()
 
+            val message = MailService.createMessage().apply {
+                withSubject("From Directus")
+                withPlainText("Hello World")
+                to("dennis@example.com")
+            }.buildEmail()
+
+            transporter.sendMail(message, true)
+            call.successResponse(HttpStatusCode.OK, token)
         }
     }
 }
@@ -86,8 +87,8 @@ fun StatusPages.Configuration.failedAuth() {
         call.errorResponse(exception)
     }
 
-    exception<TokenExpiredException> {
-        throw TokenExpiredException("Token Expired")
+    exception<TokenExpiredException> {exception ->
+        throw ExpiredTokenException(exception.message!!)
     }
 
     exception<ExpiredTokenException>  { exception ->

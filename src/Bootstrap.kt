@@ -1,9 +1,9 @@
 package com.directus
 
-import com.directus.auth.AuthConfig
-import com.directus.domain.model.DatabaseConfig
+import com.charleskorn.kaml.Yaml
+import com.directus.config.ProjectConfig
 import com.directus.domain.service.UserService
-import com.directus.repository.Database
+import com.directus.repository.database.Database
 import domain.model.Setting
 import domain.model.Settings
 import domain.model.Users
@@ -12,6 +12,7 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.mindrot.jbcrypt.BCrypt
+import java.io.File
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -20,23 +21,23 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.boot(testing: Boolean = false) {
 
-    val config = environment.config
+    val resources = File("resources/").takeIf { it.exists() } ?: throw Exception("Resource directory not found")
+    resources
+        .walk()
+        .forEach { file ->
+            file.takeIf { it.isFile }
+                ?.takeIf { it.name.endsWith(".yaml") }
+                ?.takeIf { it.name.startsWith("api") }
+                ?.apply {
+                    val projectKey =
+                        if (nameWithoutExtension.substringAfter('.') != "api")
+                            nameWithoutExtension.substringAfter('.') else "_"
+                    val fileContent = File("${resources.absolutePath}/$name").readText()
+                    ConfigService.configs[projectKey] = Yaml.default.parse(ProjectConfig.serializer(), fileContent)
+                }
+        }
 
-    ConfigService.projectKey = config.propertyOrNull("directus.projektKey")?.getString() ?: "_"
 
-    ConfigService.database = DatabaseConfig(
-        type = config.propertyOrNull("directus.database.type")?.getString() ?: "mysql",
-        host = config.propertyOrNull("directus.database.host")?.getString() ?: "localhost",
-        port = config.propertyOrNull("directus.database.port")?.getString()?.toInt() ?: 3306,
-        name = config.propertyOrNull("directus.database.port")?.getString() ?: "directus",
-        username = config.propertyOrNull("directus.database.username")?.getString() ?: "root",
-        password = config.propertyOrNull("directus.database.password")?.getString() ?: "root"
-    )
-
-    ConfigService.auth = AuthConfig(
-        secretKey = config.propertyOrNull("directus.auth.secretKey")?.getString()?: "oUa7VfxSkhzHJFmmLKFQ8kThWYPvpd3a",
-        publicKey = config.propertyOrNull("directus.auth.publicKey")?.getString()?: "ie2PupjbvRcXs8GQ8yYc8Tw8wAdburbl"
-    )
 
     Database.initMysql()
     Database.createTables(Users, Settings)

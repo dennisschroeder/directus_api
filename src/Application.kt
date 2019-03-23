@@ -1,17 +1,16 @@
 package com.directus
 
+import auth.jwt
 import com.directus.auth.AuthService
 import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
-import com.directus.endpoint.auth.user
 import com.directus.endpoint.root
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.auth.jwt.jwt
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -56,10 +55,9 @@ fun Application.main(testing: Boolean = false) {
         jwt {
             verifier(AuthService.verifier)
             validate { credentials ->
-
                 when {
-                    credentials.payload.getClaim("type").asString() != "auth" -> return@validate null
-                    credentials.payload.getClaim("key").asString() != ConfigService.auth!!.publicKey -> return@validate null
+                    credentials.payload.getClaim("type").asString() != "auth" -> null
+                    credentials.payload.getClaim("key").asString() != ConfigService.configs[credentials.projectKey]?.auth!!.privateKey -> null
                     else -> credentials.payload.getClaim("userId").asInt().let { userId ->
                         UserService.getUser(userId)
                     }
@@ -73,20 +71,24 @@ fun Application.main(testing: Boolean = false) {
     }
 
     install(Routing) {
-        root(ConfigService.projectKey!!) {
+
+        get("/") {
+            call.respondText { "Serving application information soon..." }
+        }
+
+
+
+        root("{projectKey}") {
+            authenticate {
+                get("/server/ping") {
+                    call.respondText { "pong" }
+                }
+            }
+
             route("/auth") {
                 authentication()
             }
         }
-
-        authenticate {
-
-            get("/") {
-                val email = call.user?.email
-
-                call.respondText { "Usermaail: $email" }
-            }
-
-        }
     }
+
 }

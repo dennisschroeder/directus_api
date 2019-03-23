@@ -1,0 +1,20 @@
+database:
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  name: "directus"
+  username: "root"
+  password: "root"
+
+auth:
+  secretKey: "<type-a-secret-authentication-key-string>"
+  privateKey: "<type-a-public-authentication-key-string>"
+
+
+mail:
+  host: "localhost"
+  port: 25
+  secure: false
+  username: "username"
+  password: "password"
+  from: "admin@example.com"

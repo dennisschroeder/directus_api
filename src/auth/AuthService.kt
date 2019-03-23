@@ -9,15 +9,17 @@ import java.util.*
 
 object AuthService {
     private const val validityInMs = 36_000_00 * 1 // 60 minutes
-    private val algorithm: Algorithm = Algorithm.HMAC256(ConfigService.auth!!.secretKey)
-    val verifier: JWTVerifier = JWT.require(algorithm).build()
+    var projectKey: String = ""
+//    var algorithm: Algorithm = Algorithm.HMAC256(getSecretKeyForProject(projectKey))
+    var algorithm: Algorithm = Algorithm.HMAC256("wwl,mnj")
+    var verifier: JWTVerifier = JWT.require(algorithm).build()
 
     fun signAuthToken(user: User) = JWT.create()
         .withClaim("userId", user.id.value)
         .withClaim("type", "auth")
-        .withClaim("key", ConfigService.auth?.publicKey)
+        .withClaim("key", getPrivateKeyForProject(projectKey))
         .withExpiresAt(getExpiration())
-        .sign(algorithm)!!
+        .sign(algorithm)!!.also { println(projectKey) }
 
     fun signPasswordRequestToken(user: User) = JWT.create()
         .withClaim("email", user.email)
@@ -27,5 +29,9 @@ object AuthService {
         .sign(algorithm)!!
 
     private fun getExpiration() = Date(System.currentTimeMillis() + validityInMs)
+
+
+    private fun getPrivateKeyForProject(projectKey: String) = ConfigService.configs[projectKey]?.auth!!.privateKey
+    private fun getSecretKeyForProject(projectKey: String) = ConfigService.configs[projectKey]?.auth!!.secretKey
 }
 

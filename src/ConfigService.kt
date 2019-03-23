@@ -1,11 +1,8 @@
 package com.directus
 
-import com.directus.auth.AuthConfig
-import com.directus.domain.model.DatabaseConfig
-
+import com.directus.config.ProjectConfig
 
 object ConfigService {
- var database: DatabaseConfig? = null
- var projectKey: String? = null
- var auth: AuthConfig? = null
+    val configs = hashMapOf<String, ProjectConfig>()
+
 }

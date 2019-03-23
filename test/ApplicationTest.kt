@@ -1,46 +1,37 @@
 package com.directus
 
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import kotlin.reflect.full.memberProperties
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ApplicationTest {
 
-
     @Test
-    fun testRoot() {
+    fun testPingResponse() = testApp  {
         withTestApplication({ boot(testing = true) }) {
-            handleRequest(HttpMethod.Get, "/").apply {
+            handleRequest(HttpMethod.Get, "server/ping").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("HELLO DENNIS!", response.content)
+                assertEquals("pong", response.content)
             }
         }
     }
 
     @Test
-    fun testLogin() {
-        withTestApplication({ boot(testing = true) }) {
-            val credentials = """
-                                {
-                                    "email": "admin@example.com",
-                                    "password": "password"
-                                }
-                            """
+    fun testConfigValuesNotNull() = withTestApplication({ boot(testing = true) }) {
+        val config = ConfigService
 
-            val call = handleRequest(HttpMethod.Post, "/_/auth/authenticate") {
-                addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                setBody(credentials)
-            }
+        config.database::class.memberProperties.forEach { assertNotNull(it) }
+        config.auth::class.memberProperties.forEach { assertNotNull(it) }
+        config.mail::class.memberProperties.forEach { assertNotNull(it) }
+    }
 
-            call.apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-            }
-        }
+    private fun testApp(callback: TestApplicationEngine.() -> Unit) {
+
     }
 }

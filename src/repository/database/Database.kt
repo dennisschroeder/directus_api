@@ -1,4 +1,4 @@
-package com.directus.repository
+package com.directus.repository.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
@@ -34,7 +34,7 @@ object Database {
 
     private fun mySqlConfig(): HikariDataSource {
         val config = HikariConfig()
-        config.jdbcUrl="jdbc:mysql://localhost:32768/directus"
+        config.jdbcUrl="jdbc:mysql://localhost:3307/directus"
         config.username = "root"
         config.password=""
         config.maximumPoolSize=10
