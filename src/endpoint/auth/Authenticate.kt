@@ -13,6 +13,7 @@ import com.directus.endpoint.auth.exception.UserNotFoundException
 import com.directus.endpoint.exception.BadRequestException
 import com.directus.errorResponse
 import com.directus.mail.MailService
+import com.directus.projectKey
 import com.directus.successResponse
 import domain.model.User
 import io.ktor.application.ApplicationCall
@@ -31,7 +32,7 @@ import io.ktor.routing.route
 fun Route.authentication() {
     post("/authenticate") {
         val credentials = call.receive<Credentials>()
-        val projectKey = call.parameters["projectKey"]!!
+        val projectKey = call.projectKey!!
         val user = UserService.getUserByEmail(credentials.email)
 
         when {

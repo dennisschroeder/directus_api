@@ -1,14 +1,10 @@
 package com.directus.domain.service
 
+import com.directus.repository.SettingsRepository
 import domain.model.Setting
 import org.jetbrains.exposed.sql.SizedIterable
-import org.jetbrains.exposed.sql.transactions.transaction
 
 object SettingsService {
-
-    fun getSettings(): SizedIterable<Setting> = transaction { Setting.all() }
-    fun getSetting(id: Int): Setting? = transaction { Setting.findById(id) }
-
-
-
+    fun getSettings(): SizedIterable<Setting> = SettingsRepository.getAll()
+    fun getSetting(id: Int): Setting? = SettingsRepository.getById(id)
 }

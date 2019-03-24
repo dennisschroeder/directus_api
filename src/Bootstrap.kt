@@ -4,16 +4,13 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.charleskorn.kaml.Yaml
 import com.directus.auth.AuthService
 import com.directus.config.ProjectConfig
-import com.directus.domain.service.UserService
-import com.directus.repository.database.Database
+import com.directus.repository.database.DatabaseService
 import domain.model.Setting
 import domain.model.Settings
 import domain.model.Users
 import io.ktor.application.Application
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.launch
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.mindrot.jbcrypt.BCrypt
 import java.io.File
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -36,23 +33,29 @@ fun Application.boot(testing: Boolean = false) {
                             nameWithoutExtension.substringAfter('.') else "_"
                     val fileContent = File("${resources.absolutePath}/$name").readText()
                     ConfigService.configs[projectKey] = Yaml.default.parse(ProjectConfig.serializer(), fileContent)
+
                     AuthService.algorithms[projectKey] = Algorithm.HMAC256(ConfigService.configs[projectKey]!!.auth.secretKey)
+
+                    DatabaseService.connections[projectKey] = DatabaseService.initMysql(DatabaseService.buildSqlConfig(
+                        host = ConfigService.configs[projectKey]!!.database.host,
+                        port = ConfigService.configs[projectKey]!!.database.port,
+                        dbName = ConfigService.configs[projectKey]!!.database.name,
+                        username = ConfigService.configs[projectKey]!!.database.username,
+                        password = ConfigService.configs[projectKey]!!.database.password
+                    ))
                 }
         }
 
+    DatabaseService.createTables(Users, Settings)
 
 
-    println(AuthService.algorithms["_"])
-
-    Database.initMysql()
-    Database.createTables(Users, Settings)
-
-    transaction {
+    transaction(DatabaseService.connections["_"]) {
         Setting.new {
             key = "project_name"
-            value = "Directus"
+            value = "Production"
         }
     }
+    /*
 
     launch {
         val user = UserService.getUserByEmail("admin@example.com")
@@ -63,5 +66,6 @@ fun Application.boot(testing: Boolean = false) {
             }
         }
     }
+    */
 }
 

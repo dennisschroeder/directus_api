@@ -5,15 +5,7 @@ import domain.model.Users
 import repository.RepositoryInterface
 
 object UserRepository : RepositoryInterface<User> {
-    suspend fun getById(id: Int) = asyncQuery {
-        User.findById(id)
-    }
-
-    suspend fun getAll() = asyncQuery {
-        User.all()
-    }
-
-    suspend fun findByEmail(email: String) = asyncQuery {
-        User.find { Users.email eq email }.singleOrNull()
-    }
+    override fun getById(id: Int) = User.findById(id)
+    override fun getAll() = User.all()
+    fun findByEmail(email: String) = User.find { Users.email eq email }.singleOrNull()
 }

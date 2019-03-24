@@ -6,11 +6,12 @@ import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
 import com.directus.endpoint.root
+import com.directus.repository.database.DatabaseService
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
-import io.ktor.auth.authenticate
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -25,6 +26,8 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -63,7 +66,7 @@ fun Application.main(testing: Boolean = false) {
                 }
             }
 
-            verifier {_, projectKey ->
+            verifier { _, projectKey ->
                 AuthService.verifier(projectKey)
             }
         }
@@ -74,24 +77,30 @@ fun Application.main(testing: Boolean = false) {
     }
 
     install(Routing) {
-
         get("/") {
             call.respondText { "Serving application information soon..." }
         }
 
-
+        get("/server/ping") {
+            call.respondText { "pong" }
+        }
 
         root("{projectKey}") {
-            authenticate {
-                get("/server/ping") {
-                    call.respondText { "pong" }
-                }
-            }
 
             route("/auth") {
                 authentication()
             }
         }
     }
-
 }
+
+fun <Q>ApplicationCall.query(query: () -> Q) {
+   org.jetbrains.exposed.sql.transactions.transaction(dbConnection) {query()}
+}
+
+suspend fun <Q>ApplicationCall.asyncQuery(query: () -> Q) = withContext(Dispatchers.IO) {
+    org.jetbrains.exposed.sql.transactions.transaction(dbConnection) { query() }
+}
+
+val ApplicationCall.projectKey get() = parameters["projectKey"]
+val ApplicationCall.dbConnection get() =  DatabaseService.connections[projectKey]

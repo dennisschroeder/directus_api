@@ -8,36 +8,28 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
 // @ToDo: Refactor to a more Kotlinesque style
-object Database {
+object DatabaseService {
 
-    fun initH2() {
-        Database.connect(h2Config())
+    val connections = hashMapOf<String,Database>()
+
+    fun initMysql(dataSource: HikariDataSource) = Database.connect(dataSource)
+
+    fun createTables(vararg tables: IntIdTable) {
+        connections.forEach { transaction(it.value) { SchemaUtils.create(*tables) } }
     }
 
-    fun initMysql() {
-        Database.connect(mySqlConfig())
-    }
-
-    fun createTables(vararg tables: IntIdTable) = transaction { SchemaUtils.create(*tables) }
-
-    private fun h2Config(): HikariDataSource {
+    fun buildSqlConfig(
+        host: String,
+        port: Int,
+        dbName: String,
+        username: String,
+        password: String
+    ): HikariDataSource {
         val config = HikariConfig()
-        config.driverClassName = "org.h2.Driver"
-        config.jdbcUrl = "jdbc:h2:mem:test"
-        config.maximumPoolSize = 3
-        config.isAutoCommit = false
-        config.transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-        config.validate()
-        return HikariDataSource(config)
-    }
-
-
-    private fun mySqlConfig(): HikariDataSource {
-        val config = HikariConfig()
-        config.jdbcUrl="jdbc:mysql://localhost:3307/directus"
-        config.username = "root"
-        config.password=""
-        config.maximumPoolSize=10
+        config.jdbcUrl = "jdbc:mysql://$host:$port/$dbName"
+        config.username = username
+        config.password = password
+        config.maximumPoolSize = 10
         config.addDataSourceProperty("cachePrepStmts", "true")
         config.addDataSourceProperty("prepStmtCacheSize", "250")
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048")

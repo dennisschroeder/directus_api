@@ -1,15 +1,9 @@
 package repository
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.SizedIterable
 
-interface RepositoryInterface<Model> {
+interface RepositoryInterface<Entity> {
+    fun getById(id: Int): Entity?
+    fun getAll(): SizedIterable<Entity>
 
-    suspend fun <Q> asyncQuery(
-        block: () -> Q
-    ): Q =
-        withContext(Dispatchers.IO) {
-            transaction { block() }
-        }
 }
