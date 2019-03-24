@@ -1,6 +1,8 @@
 package com.directus
 
+import com.auth0.jwt.algorithms.Algorithm
 import com.charleskorn.kaml.Yaml
+import com.directus.auth.AuthService
 import com.directus.config.ProjectConfig
 import com.directus.domain.service.UserService
 import com.directus.repository.database.Database
@@ -34,10 +36,13 @@ fun Application.boot(testing: Boolean = false) {
                             nameWithoutExtension.substringAfter('.') else "_"
                     val fileContent = File("${resources.absolutePath}/$name").readText()
                     ConfigService.configs[projectKey] = Yaml.default.parse(ProjectConfig.serializer(), fileContent)
+                    AuthService.algorithms[projectKey] = Algorithm.HMAC256(ConfigService.configs[projectKey]!!.auth.secretKey)
                 }
         }
 
 
+
+    println(AuthService.algorithms["_"])
 
     Database.initMysql()
     Database.createTables(Users, Settings)
@@ -50,9 +55,7 @@ fun Application.boot(testing: Boolean = false) {
     }
 
     launch {
-
         val user = UserService.getUserByEmail("admin@example.com")
-
         if (null === user) {
             UserService.createUser {
                 email = "admin@example.com"

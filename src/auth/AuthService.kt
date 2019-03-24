@@ -6,32 +6,32 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.directus.ConfigService
 import domain.model.User
 import java.util.*
+import kotlin.collections.HashMap
 
 object AuthService {
-    private const val validityInMs = 36_000_00 * 1 // 60 minutes
-    var projectKey: String = ""
-//    var algorithm: Algorithm = Algorithm.HMAC256(getSecretKeyForProject(projectKey))
-    var algorithm: Algorithm = Algorithm.HMAC256("wwl,mnj")
-    var verifier: JWTVerifier = JWT.require(algorithm).build()
+    private const val validityInMs = 60_000 * 5 // 5 minute
 
-    fun signAuthToken(user: User) = JWT.create()
+    // We need one algorithm per project.
+    // The algorithms are set in the boot module
+    val algorithms = HashMap<String,Algorithm>()
+
+    fun verifier(projectKey: String): JWTVerifier = JWT.require(algorithms[projectKey]).build()
+
+    fun signAuthToken(user: User, projectKey: String) = JWT.create()
         .withClaim("userId", user.id.value)
         .withClaim("type", "auth")
         .withClaim("key", getPrivateKeyForProject(projectKey))
         .withExpiresAt(getExpiration())
-        .sign(algorithm)!!.also { println(projectKey) }
+        .sign(algorithms[projectKey])!!
 
-    fun signPasswordRequestToken(user: User) = JWT.create()
+    fun signPasswordRequestToken(user: User, projectKey: String) = JWT.create()
         .withClaim("email", user.email)
         .withClaim("userId", user.id.value)
         .withClaim("type", "reset_password")
         .withExpiresAt(getExpiration())
-        .sign(algorithm)!!
+        .sign(algorithms[projectKey])!!
 
     private fun getExpiration() = Date(System.currentTimeMillis() + validityInMs)
-
-
     private fun getPrivateKeyForProject(projectKey: String) = ConfigService.configs[projectKey]?.auth!!.privateKey
-    private fun getSecretKeyForProject(projectKey: String) = ConfigService.configs[projectKey]?.auth!!.secretKey
 }
 

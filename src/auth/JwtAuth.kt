@@ -1,4 +1,4 @@
-package auth
+package com.directus.auth
 
 import com.auth0.jwk.Jwk
 import com.auth0.jwk.JwkException
@@ -48,7 +48,7 @@ class JWTAuthenticationProvider(name: String?) : AuthenticationProvider(name) {
     internal var authenticationFunction: suspend ApplicationCall.(JWTCredential) -> Principal? = { null }
 
     internal var schemes = JWTAuthSchemes("Bearer")
-    internal var verifier: ((HttpAuthHeader) -> JWTVerifier?) = { null }
+    internal var verifier: ((HttpAuthHeader, String) -> JWTVerifier?) = { _,_ -> null }
 
     /**
      * JWT realm name that will be used during auth challenge
@@ -67,13 +67,13 @@ class JWTAuthenticationProvider(name: String?) : AuthenticationProvider(name) {
      * @param [verifier] verifies token format and signature
      */
     fun verifier(verifier: JWTVerifier) {
-        this.verifier = { verifier }
+        this.verifier = { verifier, _ -> null }
     }
 
     /**
      * @param [verifier] verifies token format and signature
      */
-    fun verifier(verifier: (HttpAuthHeader) -> JWTVerifier?) {
+    fun verifier(verifier: (HttpAuthHeader, String) -> JWTVerifier?) {
         this.verifier = verifier
     }
 
@@ -82,14 +82,14 @@ class JWTAuthenticationProvider(name: String?) : AuthenticationProvider(name) {
      * @param [issuer] the issuer of the JSON Web Token
      */
     fun verifier(jwkProvider: JwkProvider, issuer: String) {
-        this.verifier = { token -> getVerifier(jwkProvider, issuer, token, schemes) }
+        this.verifier = { token, projectKey -> getVerifier(jwkProvider, issuer, token, schemes) }
     }
 
     /**
      * @param [jwkProvider] provides the JSON Web Key
      */
     fun verifier(jwkProvider: JwkProvider) {
-        this.verifier = { token -> getVerifier(jwkProvider, token, schemes) }
+        this.verifier = { token,projectKey -> getVerifier(jwkProvider, token, schemes) }
     }
 
     /**
@@ -127,7 +127,7 @@ fun Authentication.Configuration.jwt(name: String? = null, configure: JWTAuthent
         val projectKey = call.parameters["projectKey"]!!
 
         try {
-            val principal = verifyAndValidate(call, verifier(token), token, schemes, authenticate, projectKey)
+            val principal = verifyAndValidate(call, verifier(token, projectKey), token, schemes, authenticate, projectKey)
             if (principal != null) {
                 context.principal(principal)
             } else {

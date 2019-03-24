@@ -46,7 +46,7 @@ fun Route.authentication() {
         val body = call.receive<Map<String, String>>()
         val projectKey = call.parameters["projectKey"]!!
         val oldToken = body["token"] ?: throw BadRequestException("Missing valid token")
-        val verifier = AuthService.verifier
+        val verifier = AuthService.verifier(projectKey)
         val userId = verifier.verify(oldToken).getClaim("userId").asInt()
         val user = UserService.getUser(userId) ?: throw UserNotFoundException("User not found!")
 

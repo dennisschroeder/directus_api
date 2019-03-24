@@ -6,7 +6,6 @@ class AuthToken (user: User, projectKey: String) {
     var token: String
 
     init {
-        AuthService.projectKey = projectKey
-        this.token = AuthService.signAuthToken(user)
+        this.token = AuthService.signAuthToken(user,projectKey)
     }
 }

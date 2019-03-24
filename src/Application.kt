@@ -1,7 +1,7 @@
 package com.directus
 
-import auth.jwt
 import com.directus.auth.AuthService
+import com.directus.auth.jwt
 import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
@@ -53,7 +53,6 @@ fun Application.main(testing: Boolean = false) {
 
     install(Authentication) {
         jwt {
-            verifier(AuthService.verifier)
             validate { credentials ->
                 when {
                     credentials.payload.getClaim("type").asString() != "auth" -> null
@@ -62,6 +61,10 @@ fun Application.main(testing: Boolean = false) {
                         UserService.getUser(userId)
                     }
                 }
+            }
+
+            verifier {_, projectKey ->
+                AuthService.verifier(projectKey)
             }
         }
     }
