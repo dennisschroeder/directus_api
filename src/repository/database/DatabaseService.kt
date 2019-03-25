@@ -1,7 +1,9 @@
 package com.directus.repository.database
 
+import com.directus.projectKey
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.ktor.application.ApplicationCall
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -45,3 +47,5 @@ object DatabaseService {
     }
 
 }
+
+val ApplicationCall.dbConnection get() = DatabaseService.connections[projectKey]

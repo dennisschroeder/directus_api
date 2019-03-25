@@ -6,7 +6,6 @@ import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
 import com.directus.endpoint.root
-import com.directus.repository.database.DatabaseService
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -26,8 +25,6 @@ import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
 import io.ktor.util.KtorExperimentalAPI
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @KtorExperimentalAPI
 @KtorExperimentalLocationsAPI
@@ -94,13 +91,4 @@ fun Application.main(testing: Boolean = false) {
     }
 }
 
-fun <Q>ApplicationCall.query(query: () -> Q) {
-   org.jetbrains.exposed.sql.transactions.transaction(dbConnection) {query()}
-}
-
-suspend fun <Q>ApplicationCall.asyncQuery(query: () -> Q) = withContext(Dispatchers.IO) {
-    org.jetbrains.exposed.sql.transactions.transaction(dbConnection) { query() }
-}
-
 val ApplicationCall.projectKey get() = parameters["projectKey"]
-val ApplicationCall.dbConnection get() =  DatabaseService.connections[projectKey]
