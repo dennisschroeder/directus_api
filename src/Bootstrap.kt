@@ -27,8 +27,7 @@ fun Application.boot(testing: Boolean = false) {
         .walk()
         .forEach { file ->
             file.takeIf { it.isFile }
-                ?.takeIf { it.name.endsWith(".yaml") }
-                ?.takeIf { it.name.startsWith("api") }
+                ?.takeIf { it.name.endsWith(".yaml") && it.name.startsWith("api") }
                 ?.apply {
                     val projectKey =
                         if (nameWithoutExtension.substringAfter('.') != "api")
