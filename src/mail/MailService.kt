@@ -1,5 +1,7 @@
 package com.directus.mail
 
+import com.directus.ConfigService
+import org.simplejavamail.email.Email
 import org.simplejavamail.email.EmailBuilder
 import org.simplejavamail.email.EmailPopulatingBuilder
 import org.simplejavamail.mailer.Mailer
@@ -7,27 +9,25 @@ import org.simplejavamail.mailer.MailerBuilder
 
 
 object MailService {
-    var host: String? = null
-    var port: Int? = null
-    var secure: Boolean? = null
-    var username: String? = null
-    var password: String? = null
-    var from: String? = null
 
-    fun createTransporter(): Mailer {
+    fun createTransporter(projectKey: String): Mailer {
+
+        val config = ConfigService.configs[projectKey]!!.mail
 
         val builder = MailerBuilder
-            .withSMTPServer(host, port)
+            .withSMTPServer(config.host, config.port)
 
-        if (secure!!) {
-            builder.withSMTPServerUsername(username)
-            builder.withSMTPServerPassword(password)
+        if (config.secure) {
+            builder.withSMTPServerUsername(config.username)
+            builder.withSMTPServerPassword(config.password)
         }
 
         return builder.buildMailer()
     }
 
-    fun createMessage(): EmailPopulatingBuilder {
-        return EmailBuilder.startingBlank().from(from!!)
+    fun createMessage(init: EmailPopulatingBuilder.() -> Unit): Email {
+        val message = EmailBuilder.startingBlank()
+        message.init()
+        return message.buildEmail()
     }
 }

@@ -1,5 +1,6 @@
-package com.directus
+package integration
 
+import com.directus.boot
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.TestApplicationEngine
@@ -8,7 +9,7 @@ import io.ktor.server.testing.withTestApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class ApplicationTest {
+class IntegrationTest {
 
     @Test
     fun testPingResponse() = testApp {
@@ -16,6 +17,16 @@ class ApplicationTest {
             handleRequest(HttpMethod.Get, "server/ping").apply {
                 assertEquals(HttpStatusCode.OK, response.status())
                 assertEquals("pong", response.content)
+            }
+        }
+    }
+
+    @Test
+    fun testRootResponse() = testApp {
+        withTestApplication({ boot(testing = true) }) {
+            handleRequest(HttpMethod.Get, "/").apply {
+                assertEquals(HttpStatusCode.OK, response.status())
+                assertEquals("Serving application information soon...", response.content)
             }
         }
     }
