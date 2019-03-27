@@ -11,6 +11,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.impl.JWTParser
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.auth0.jwt.interfaces.Payload
+import com.directus.projectKey
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.*
@@ -124,7 +125,7 @@ fun Authentication.Configuration.jwt(name: String? = null, configure: JWTAuthent
             return@intercept
         }
 
-        val projectKey = call.parameters["projectKey"]!!
+        val projectKey = call.projectKey
 
         try {
             val principal = verifyAndValidate(call, verifier(token, projectKey), token, schemes, authenticate, projectKey)

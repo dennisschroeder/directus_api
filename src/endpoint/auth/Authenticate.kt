@@ -5,6 +5,8 @@ import com.directus.*
 import com.directus.auth.AuthService
 import com.directus.auth.AuthToken
 import com.directus.auth.PasswordResetToken
+import com.directus.auth.exception.NoProjectKeyException
+import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.model.Credentials
 import com.directus.domain.service.UserService
 import com.directus.domain.service.UtilService
@@ -63,7 +65,7 @@ fun Route.authentication() {
     route("/password") {
         post("/request") {
             val body = call.receive<Map<String, String>>()
-            val projectKey = call.projectKey!!
+            val projectKey = call.projectKey
             val email = body["email"] ?: throw BadRequestException("Missing email address")
             val user = UserService.getUserByEmail(email) ?: throw UserNotFoundException("User not found!")
             val token = AuthService.signPasswordRequestToken(user, projectKey)
@@ -72,7 +74,7 @@ fun Route.authentication() {
         }
 
         get<ResetPassword> { token ->
-            val projectKey = call.projectKey!!
+            val projectKey = call.projectKey
             val verifier = AuthService.verifier(projectKey)
             val emailFromToken = verifier.verify(token.resetToken).getClaim("email").asString()
 
@@ -101,21 +103,16 @@ fun Route.authentication() {
 }
 
 fun StatusPages.Configuration.failedAuth() {
-    exception<InvalidCredentialsException> { exception ->
-        call.errorResponse(exception)
-    }
+    exception<InvalidCredentialsException> { call.errorResponse(it) }
 
-    exception<UserNotFoundException> { exception ->
-        call.errorResponse(exception)
-    }
+    exception<UserNotFoundException> { call.errorResponse(it) }
 
-    exception<TokenExpiredException> {exception ->
-        throw ExpiredTokenException(exception.message!!)
-    }
+    exception<TokenExpiredException> { throw ExpiredTokenException(it.message!!) }
+    exception<ExpiredTokenException>  { call.errorResponse(it) }
 
-    exception<ExpiredTokenException>  { exception ->
-        call.errorResponse(exception)
-    }
+    exception<NoProjectKeyException>  { call.errorResponse(it) }
+
+    exception<ApiConfigurationNotFoundException>  { call.errorResponse(it) }
 }
 
 /**

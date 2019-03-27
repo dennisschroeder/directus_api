@@ -1,7 +1,9 @@
 package com.directus
 
 import com.directus.auth.AuthService
+import com.directus.auth.exception.NoProjectKeyException
 import com.directus.auth.jwt
+import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
@@ -91,4 +93,8 @@ fun Application.main(testing: Boolean = false) {
     }
 }
 
-val ApplicationCall.projectKey get() = parameters["projectKey"]
+val ApplicationCall.projectKey get() = when {
+    parameters["projectKey"] == null -> throw NoProjectKeyException("No project key found in private route")
+    !ConfigService.configs.containsKey(parameters["projectKey"]) -> throw ApiConfigurationNotFoundException("No project found that matches project configuration")
+    else -> parameters["projectKey"]!!
+}
