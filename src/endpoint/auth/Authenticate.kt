@@ -47,9 +47,9 @@ fun Route.authentication() {
 
     post("/refresh") {
         val body = call.receive<Map<String, String>>()
-        val projectKey = call.projectKey!!
         val oldToken = body["token"] ?: throw BadRequestException("Missing valid token")
 
+        val projectKey = call.projectKey
         val verifier = AuthService.verifier(projectKey)
         val userId = verifier.verify(oldToken).getClaim("userId").asInt()
 
@@ -65,9 +65,10 @@ fun Route.authentication() {
     route("/password") {
         post("/request") {
             val body = call.receive<Map<String, String>>()
-            val projectKey = call.projectKey
             val email = body["email"] ?: throw BadRequestException("Missing email address")
             val user = UserService.getUserByEmail(email) ?: throw UserNotFoundException("User not found!")
+
+            val projectKey = call.projectKey
             val token = AuthService.signPasswordRequestToken(user, projectKey)
 
             call.successResponse(HttpStatusCode.OK, PasswordResetToken(token))

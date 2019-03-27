@@ -8,10 +8,7 @@ import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
 import com.directus.endpoint.root
-import io.ktor.application.Application
-import io.ktor.application.ApplicationCall
-import io.ktor.application.call
-import io.ktor.application.install
+import io.ktor.application.*
 import io.ktor.auth.Authentication
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
@@ -58,7 +55,8 @@ fun Application.main(testing: Boolean = false) {
             validate { credentials ->
                 when {
                     credentials.payload.getClaim("type").asString() != "auth" -> null
-                    credentials.payload.getClaim("key").asString() != ConfigService.configs[credentials.projectKey]?.auth!!.privateKey -> null
+                    credentials.payload.getClaim("key").asString() !=
+                            ConfigService.configs[credentials.projectKey]?.auth!!.privateKey -> null
                     else -> credentials.payload.getClaim("userId").asInt().let { userId ->
                         UserService.getUser(userId)
                     }
@@ -85,7 +83,6 @@ fun Application.main(testing: Boolean = false) {
         }
 
         root("{projectKey}") {
-
             route("/auth") {
                 authentication()
             }
@@ -93,8 +90,11 @@ fun Application.main(testing: Boolean = false) {
     }
 }
 
-val ApplicationCall.projectKey get() = when {
-    parameters["projectKey"] == null -> throw NoProjectKeyException("No project key found in private route")
-    !ConfigService.configs.containsKey(parameters["projectKey"]) -> throw ApiConfigurationNotFoundException("No project found that matches project configuration")
-    else -> parameters["projectKey"]!!
-}
+val ApplicationCall.projectKey
+    get() = when {
+        parameters["projectKey"] == null ->
+            throw NoProjectKeyException("No project key found in private route")
+        !ConfigService.configs.containsKey(parameters["projectKey"]) ->
+            throw ApiConfigurationNotFoundException("No project found that matches project configuration")
+        else -> parameters["projectKey"]!!
+    }
