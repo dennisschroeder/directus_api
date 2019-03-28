@@ -4,10 +4,10 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.charleskorn.kaml.Yaml
 import com.directus.auth.AuthService
 import com.directus.config.ProjectConfig
+import com.directus.domain.model.Users
 import com.directus.domain.service.UserService
 import com.directus.repository.database.DatabaseService
 import domain.model.Settings
-import domain.model.Users
 import io.ktor.application.Application
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.launch

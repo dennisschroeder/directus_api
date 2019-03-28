@@ -8,6 +8,7 @@ import com.directus.auth.PasswordResetToken
 import com.directus.auth.exception.NoProjectKeyException
 import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.model.Credentials
+import com.directus.domain.model.User
 import com.directus.domain.service.UserService
 import com.directus.domain.service.UtilService
 import com.directus.endpoint.auth.exception.ExpiredTokenException
@@ -16,7 +17,6 @@ import com.directus.endpoint.auth.exception.UserNotFoundException
 import com.directus.endpoint.exception.BadRequestException
 import com.directus.mail.MailService
 import com.directus.repository.database.asyncTransaction
-import domain.model.User
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authentication
@@ -34,7 +34,7 @@ import org.mindrot.jbcrypt.BCrypt
 fun Route.authentication() {
     post("/authenticate") {
         val credentials = call.receive<Credentials>()
-        val projectKey = call.projectKey!!
+        val projectKey = call.projectKey
         val user = call.asyncTransaction { UserService.getUserByEmail(credentials.email) }
 
         when {
@@ -66,7 +66,9 @@ fun Route.authentication() {
         post("/request") {
             val body = call.receive<Map<String, String>>()
             val email = body["email"] ?: throw BadRequestException("Missing email address")
-            val user = UserService.getUserByEmail(email) ?: throw UserNotFoundException("User not found!")
+            val user = call.asyncTransaction {
+                UserService.getUserByEmail(email) ?: throw UserNotFoundException("User not found!")
+            }
 
             val projectKey = call.projectKey
             val token = AuthService.signPasswordRequestToken(user, projectKey)

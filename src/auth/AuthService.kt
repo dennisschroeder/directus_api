@@ -4,12 +4,12 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.directus.ConfigService
-import domain.model.User
+import com.directus.domain.model.User
 import java.util.*
 import kotlin.collections.HashMap
 
 object AuthService {
-    private const val validityInMs = 60_000 * 5 // 5 minute
+    private const val validityInMs = 60_000 * 60 // 5 minute
 
     // We need one algorithm per project.
     // The algorithms are set in the boot module

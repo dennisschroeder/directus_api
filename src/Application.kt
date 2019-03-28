@@ -8,8 +8,14 @@ import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
 import com.directus.endpoint.root
-import io.ktor.application.*
+import com.directus.endpoint.users.users
+import com.directus.repository.database.DatabaseService
+import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
+import io.ktor.application.call
+import io.ktor.application.install
 import io.ktor.auth.Authentication
+import io.ktor.auth.authenticate
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -58,7 +64,9 @@ fun Application.main(testing: Boolean = false) {
                     credentials.payload.getClaim("key").asString() !=
                             ConfigService.configs[credentials.projectKey]?.auth!!.privateKey -> null
                     else -> credentials.payload.getClaim("userId").asInt().let { userId ->
-                        UserService.getUser(userId)
+                        DatabaseService.asyncTransaction(credentials.projectKey) {
+                            UserService.getUser(userId)
+                        }
                     }
                 }
             }
@@ -85,6 +93,10 @@ fun Application.main(testing: Boolean = false) {
         root("{projectKey}") {
             route("/auth") {
                 authentication()
+            }
+
+            authenticate {
+                users()
             }
         }
     }

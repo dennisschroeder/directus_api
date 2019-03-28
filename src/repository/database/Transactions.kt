@@ -1,14 +1,7 @@
 package com.directus.repository.database
 
+import com.directus.projectKey
 import io.ktor.application.ApplicationCall
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.sql.transactions.transaction
 
-fun <Q> ApplicationCall.transaction(query: () -> Q) {
-    org.jetbrains.exposed.sql.transactions.transaction(dbConnection) { query() }
-}
-
-suspend fun <Q> ApplicationCall.asyncTransaction(query: () -> Q) = withContext(Dispatchers.IO) {
-    transaction(dbConnection) { query() }
-}
+fun <Q> ApplicationCall.transaction(query: () -> Q) = DatabaseService.transaction(projectKey) {query()}
+suspend fun <Q> ApplicationCall.asyncTransaction(query: () -> Q) = DatabaseService.asyncTransaction(projectKey) {query()}

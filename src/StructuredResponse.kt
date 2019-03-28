@@ -9,7 +9,7 @@ import javax.lang.model.type.NullType
 
 
 suspend fun ApplicationCall.errorResponse(exception: AbstractBaseException) {
-    this.respond(
+    respond(
         exception.errorCode.httpCode,
         ErrorResponse(
             code = exception.errorCode.internalCode,
@@ -19,7 +19,7 @@ suspend fun ApplicationCall.errorResponse(exception: AbstractBaseException) {
 }
 
 suspend fun <Data>ApplicationCall.successResponse(httpCode: HttpStatusCode, data: Data) {
-    this.respond(
+    respond(
         httpCode,
         SuccessResponse<Data, NullType>(data)
     )

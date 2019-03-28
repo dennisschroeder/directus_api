@@ -1,4 +1,4 @@
-package domain.model
+package com.directus.domain.model
 
 import com.google.gson.annotations.JsonAdapter
 import com.rnett.exposedgson.ExposedGSON
@@ -8,6 +8,7 @@ import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
+import org.joda.time.DateTime
 import org.mindrot.jbcrypt.BCrypt
 
 object Users : IntIdTable("directus_user") {
@@ -59,3 +60,23 @@ open class User(id: EntityID<Int>) : IntEntity(id), Principal {
 
     fun authenticate(rawPassword: String) = BCrypt.checkpw(rawPassword, password)
 }
+
+data class UserReceiver (
+    val status: String,
+    val firstName: String,
+    val lastName: String,
+    val email: String,
+    val password: String,
+    val token: String,
+    val timezone: String,
+    val locale: String,
+    val localeOptions: String,
+    val avatar: Int,
+    val company: String,
+    val title: String,
+    val emailNotifications: Boolean,
+    val lastAccessOn: DateTime,
+    val lastPage: String,
+    val externalId: String
+
+    )

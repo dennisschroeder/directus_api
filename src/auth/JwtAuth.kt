@@ -68,7 +68,7 @@ class JWTAuthenticationProvider(name: String?) : AuthenticationProvider(name) {
      * @param [verifier] verifies token format and signature
      */
     fun verifier(verifier: JWTVerifier) {
-        this.verifier = { verifier, _ -> null }
+        this.verifier = { _, _ -> null }
     }
 
     /**
@@ -83,14 +83,14 @@ class JWTAuthenticationProvider(name: String?) : AuthenticationProvider(name) {
      * @param [issuer] the issuer of the JSON Web Token
      */
     fun verifier(jwkProvider: JwkProvider, issuer: String) {
-        this.verifier = { token, projectKey -> getVerifier(jwkProvider, issuer, token, schemes) }
+        this.verifier = { token, _ -> getVerifier(jwkProvider, issuer, token, schemes) }
     }
 
     /**
      * @param [jwkProvider] provides the JSON Web Key
      */
     fun verifier(jwkProvider: JwkProvider) {
-        this.verifier = { token,projectKey -> getVerifier(jwkProvider, token, schemes) }
+        this.verifier = { token,_ -> getVerifier(jwkProvider, token, schemes) }
     }
 
     /**

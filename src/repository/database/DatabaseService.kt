@@ -4,6 +4,8 @@ import com.directus.projectKey
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.ApplicationCall
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -12,7 +14,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 // @ToDo: Refactor to a more Kotlinesque style
 object DatabaseService {
 
-    val connections = hashMapOf<String,Database>()
+    val connections = hashMapOf<String, Database>()
 
     fun initMysql(dataSource: HikariDataSource) = Database.connect(dataSource)
 
@@ -46,6 +48,11 @@ object DatabaseService {
         return HikariDataSource(config)
     }
 
+    fun <Query> transaction(projectKey: String, query: () -> Query) =
+        transaction(connections[projectKey]) { query }
+
+    suspend fun <Query> asyncTransaction(projectKey: String, query: () -> Query) =
+        withContext(Dispatchers.IO) { transaction(connections[projectKey]) { query() } }
 }
 
 val ApplicationCall.dbConnection get() = DatabaseService.connections[projectKey]
