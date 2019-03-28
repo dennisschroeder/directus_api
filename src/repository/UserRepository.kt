@@ -1,7 +1,8 @@
 package com.directus.repository
 
-import domain.model.User
-import domain.model.Users
+import com.directus.domain.model.User
+import com.directus.domain.model.Users
+
 import repository.RepositoryInterface
 
 object UserRepository : RepositoryInterface<User> {

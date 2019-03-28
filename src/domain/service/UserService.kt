@@ -1,6 +1,6 @@
 package com.directus.domain.service
+import com.directus.domain.model.User
 import com.directus.repository.UserRepository
-import domain.model.User
 
 object UserService {
 
