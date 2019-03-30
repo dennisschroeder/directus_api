@@ -1,10 +1,13 @@
 package com.directus.repository
 
-import domain.model.Setting
-import domain.model.Settings
+import com.directus.domain.model.Setting
+import com.directus.domain.model.Settings
+import org.jetbrains.exposed.sql.deleteWhere
 import repository.RepositoryInterface
 
 object SettingsRepository: RepositoryInterface<Setting> {
+    override fun remove(id: Int) = Settings.deleteWhere { Settings.id eq id }
+
     override fun getById(id: Int) = Setting.findById(id)
     override fun getAll() = Setting.all()
 

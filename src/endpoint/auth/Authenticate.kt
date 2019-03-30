@@ -41,7 +41,7 @@ fun Route.authentication() {
             user == null -> throw UserNotFoundException("User not found!")
             !user.authenticate(credentials.password) -> throw InvalidCredentialsException("Wrong Credentials")
 
-            else -> call.successResponse(HttpStatusCode.OK, AuthToken(AuthService.signAuthToken(user, projectKey)))
+            else -> call.successResponse(HttpStatusCode.OK, AuthToken(AuthService.signAuthToken(user.id.value, projectKey)))
         }
     }
 
@@ -57,7 +57,7 @@ fun Route.authentication() {
             UserService.getUser(userId) ?: throw UserNotFoundException("User not found!")
         }
 
-        val token = AuthService.signAuthToken(user, projectKey)
+        val token = AuthService.signAuthToken(user.id.value, projectKey)
 
         call.successResponse(HttpStatusCode.OK, AuthToken(token))
     }
@@ -122,4 +122,4 @@ fun StatusPages.Configuration.failedAuth() {
  * Adds the authenticated user to the call pipeline
  * The user can be accessed with "call.user"!
  */
-val ApplicationCall.user get() = authentication.principal<User>()
+val ApplicationCall.user get() = authentication.principal<User>()!!

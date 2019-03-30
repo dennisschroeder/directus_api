@@ -4,10 +4,11 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.charleskorn.kaml.Yaml
 import com.directus.auth.AuthService
 import com.directus.config.ProjectConfig
+import com.directus.domain.model.Settings
+import com.directus.domain.model.UserStatus
 import com.directus.domain.model.Users
 import com.directus.domain.service.UserService
 import com.directus.repository.database.DatabaseService
-import domain.model.Settings
 import io.ktor.application.Application
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.launch
@@ -62,6 +63,7 @@ fun Application.boot(testing: Boolean = false) {
                     UserService.createUser {
                         email = "admin@example.com"
                         password = BCrypt.hashpw("password", BCrypt.gensalt())
+                        status = UserStatus.ACTIVE.value
                     }
                 }
             }

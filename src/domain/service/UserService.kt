@@ -9,4 +9,7 @@ object UserService {
     fun getUserByEmail(email: String) = UserRepository.findByEmail(email)
 
     fun createUser(fields: User.() -> Unit) =  User.new(init = fields)
+    fun deleteUser(id: Int) = UserRepository.remove(id)
+
+
 }

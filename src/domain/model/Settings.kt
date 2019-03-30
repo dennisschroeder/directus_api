@@ -1,4 +1,4 @@
-package domain.model
+package com.directus.domain.model
 
 import com.google.gson.annotations.JsonAdapter
 import com.rnett.exposedgson.ExposedGSON
@@ -9,8 +9,8 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
 
 object Settings: IntIdTable("directus_setting") {
-    val key = varchar("key", 64)
-    val value = text("value")
+    val key = varchar("key", 64).uniqueIndex()
+    val value = text("value").uniqueIndex()
 }
 
 @JsonAdapter(ExposedTypeAdapter::class)

@@ -9,29 +9,39 @@ import java.util.*
 import kotlin.collections.HashMap
 
 object AuthService {
-    private const val validityInMs = 60_000 * 60 // 5 minute
+    private const val default = 60_000 * 60 // 60 minute
+    private const val passwordRequest = 60_000 * 60 * 24 * 7 // 1 week
+    private const val invitationRequest = 60_000 * 60 * 24 * 7 // 1 week
 
     // We need one algorithm per project.
     // The algorithms are set in the boot module
-    val algorithms = HashMap<String,Algorithm>()
+    val algorithms = HashMap<String, Algorithm>()
 
     fun verifier(projectKey: String): JWTVerifier = JWT.require(algorithms[projectKey]).build()
 
-    fun signAuthToken(user: User, projectKey: String) = JWT.create()
-        .withClaim("userId", user.id.value)
+    fun signAuthToken(userID: Int, projectKey: String) = JWT.create()
+        .withClaim("userId", userID)
         .withClaim("type", "auth")
         .withClaim("key", getPrivateKeyForProject(projectKey))
-        .withExpiresAt(getExpiration())
+        .withExpiresAt(getExpiration(passwordRequest))
         .sign(algorithms[projectKey])!!
 
     fun signPasswordRequestToken(user: User, projectKey: String) = JWT.create()
         .withClaim("email", user.email)
         .withClaim("userId", user.id.value)
         .withClaim("type", "reset_password")
-        .withExpiresAt(getExpiration())
+        .withExpiresAt(getExpiration(passwordRequest))
         .sign(algorithms[projectKey])!!
 
-    private fun getExpiration() = Date(System.currentTimeMillis() + validityInMs)
+    fun signInvitationToken(userID: Int, email: String, projectKey: String) = JWT.create()
+        .withClaim("type", "invitation")
+        .withClaim("sender", userID)
+        .withClaim("date", Date(System.currentTimeMillis()))
+        .withClaim("email", email)
+        .withExpiresAt(getExpiration(invitationRequest))
+        .sign(algorithms[projectKey])!!
+
+    private fun getExpiration(timeInMilliseconds: Int) = Date(System.currentTimeMillis() + timeInMilliseconds)
     private fun getPrivateKeyForProject(projectKey: String) = ConfigService.configs[projectKey]?.auth!!.privateKey
 }
 

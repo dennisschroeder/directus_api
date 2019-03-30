@@ -7,6 +7,7 @@ import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.service.UserService
 import com.directus.endpoint.auth.authentication
 import com.directus.endpoint.auth.failedAuth
+import com.directus.endpoint.exception.BadRequestException
 import com.directus.endpoint.root
 import com.directus.endpoint.users.users
 import com.directus.repository.database.DatabaseService
@@ -53,6 +54,8 @@ fun Application.main(testing: Boolean = false) {
     }
 
     install(StatusPages) {
+        exception<BadRequestException> { call.errorResponse(it) }
+
         failedAuth()
     }
 
@@ -78,7 +81,9 @@ fun Application.main(testing: Boolean = false) {
     }
 
     install(ContentNegotiation) {
-        gson { setPrettyPrinting() }
+        gson {
+            setPrettyPrinting()
+        }
     }
 
     install(Routing) {

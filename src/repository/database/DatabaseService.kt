@@ -49,10 +49,16 @@ object DatabaseService {
     }
 
     fun <Query> transaction(projectKey: String, query: () -> Query) =
-        transaction(connections[projectKey]) { query }
+        transaction(connections[projectKey]) {
+            query()
+        }
 
     suspend fun <Query> asyncTransaction(projectKey: String, query: () -> Query) =
-        withContext(Dispatchers.IO) { transaction(connections[projectKey]) { query() } }
+        withContext(Dispatchers.IO) {
+            transaction(connections[projectKey]) {
+                query()
+            }
+        }
 }
 
 val ApplicationCall.dbConnection get() = DatabaseService.connections[projectKey]
