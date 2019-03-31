@@ -9,6 +9,15 @@
       environment:
         MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         MYSQL_DATABASE: 'directus'
+    #
+    # Dashboard
+    #
+    app:
+      image: directus/app:latest
+      environment:
+        API_ENDPOINT: "API; http://localhost:8080/_/"
+      ports:
+        - 9000:80
     mailhog:
       image: mailhog/mailhog
       ports:

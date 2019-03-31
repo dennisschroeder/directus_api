@@ -1,19 +1,19 @@
-package com.directus.endpoint.users
+package com.directus.endpoints.users
 
 import com.directus.*
 import com.directus.auth.AuthService
-import com.directus.domain.model.InvitationUserReceiver
+import com.directus.domain.model.InvitationMailReceiver
 import com.directus.domain.model.User
 import com.directus.domain.model.UserReceiver
 import com.directus.domain.model.UserStatus
 import com.directus.domain.service.UserService
-import com.directus.endpoint.auth.exception.UserNotFoundException
-import com.directus.endpoint.auth.user
-import com.directus.endpoint.exception.BadRequestException
+import com.directus.endpoints.auth.exception.UserNotFoundException
+import com.directus.endpoints.auth.user
+import com.directus.endpoints.exception.BadRequestException
 import com.directus.mail.MailService
 import com.directus.repository.database.asyncTransaction
+import endpoints.auth.exception.InvalidTokenException
 import io.ktor.application.call
-import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.*
 import io.ktor.request.receive
@@ -56,7 +56,7 @@ fun Route.users() {
 
         get {
             val users = call.asyncTransaction {
-                UserService.getUsers()
+                UserService.getUsers().toList()
             }
 
             call.successResponse(HttpStatusCode.OK, users)
@@ -126,11 +126,12 @@ fun Route.users() {
         }
 
         post("/invite") {
-            val invitationUserData = call.receive<InvitationUserReceiver>().email
+            val invitationUserData = call.receive<InvitationMailReceiver>().email
             val invitingUser = call.user
             val projectKey = call.projectKey
 
-            suspend fun inviteUser(invitationMail: String, invitingUser: User): User {
+            suspend fun inviteUser(invitationMail: String, invitingUser: User) {
+
                 val invitedUser = call.asyncTransaction {
                     UserService.createUser {
                         status = UserStatus.INVITED.value
@@ -139,8 +140,14 @@ fun Route.users() {
                     }
                 }
 
+
                 val invitationToken =
-                    AuthService.signInvitationToken(invitingUser.id.value, invitationMail, projectKey)
+                    AuthService.signInvitationToken(
+                        invitingUser.id.value,
+                        invitedUser.id.value,
+                        invitationMail,
+                        projectKey
+                    )
 
                 val message = MailService.createMessage {
                     from(ConfigService.configs[projectKey]!!.mail.from)
@@ -149,22 +156,18 @@ fun Route.users() {
                     to(invitationMail)
                 }
 
-                MailService.createTransporter(projectKey).sendMail(message)
-
-                return invitedUser
+                MailService
+                    .createTransporter(projectKey)
+                    .sendMail(message)
             }
 
             if (invitationUserData is String) {
-
-                val user = inviteUser(invitationUserData, invitingUser)
-
-                call.successResponse(HttpStatusCode.OK, user)
-
+                inviteUser(invitationUserData, invitingUser)
+                call.successResponse(HttpStatusCode.OK, "User invited!")
                 return@post
             }
 
             if (invitationUserData is ArrayList<*>) {
-
                 val users = invitationUserData.mapNotNull { mail ->
                     inviteUser(mail.toString(), invitingUser)
                 }
@@ -173,8 +176,17 @@ fun Route.users() {
                 return@post
             }
         }
-    }
-}
 
-fun StatusPages.Configuration.failedUsers() {
+        post<InvitationToken> { payload ->
+            val token = AuthService.verifier(call.projectKey).verify(payload.token)
+
+            if (token.getClaim("type").asString() != UserStatus.INVITED.value) {
+                throw InvalidTokenException("Token has wrong type!")
+            }
+
+            val invitationUserEmail =
+                token.getClaim("email").asString()
+                    ?: throw InvalidTokenException("Claim missing!")
+        }
+    }
 }

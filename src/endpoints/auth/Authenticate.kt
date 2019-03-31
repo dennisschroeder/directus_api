@@ -1,4 +1,4 @@
-package com.directus.endpoint.auth
+package com.directus.endpoints.auth
 
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.directus.*
@@ -11,10 +11,10 @@ import com.directus.domain.model.Credentials
 import com.directus.domain.model.User
 import com.directus.domain.service.UserService
 import com.directus.domain.service.UtilService
-import com.directus.endpoint.auth.exception.ExpiredTokenException
-import com.directus.endpoint.auth.exception.InvalidCredentialsException
-import com.directus.endpoint.auth.exception.UserNotFoundException
-import com.directus.endpoint.exception.BadRequestException
+import com.directus.endpoints.auth.exception.ExpiredTokenException
+import com.directus.endpoints.auth.exception.InvalidCredentialsException
+import com.directus.endpoints.auth.exception.UserNotFoundException
+import com.directus.endpoints.exception.BadRequestException
 import com.directus.mail.MailService
 import com.directus.repository.database.asyncTransaction
 import io.ktor.application.ApplicationCall

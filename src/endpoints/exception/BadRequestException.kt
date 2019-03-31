@@ -1,4 +1,4 @@
-package com.directus.endpoint.exception
+package com.directus.endpoints.exception
 
 import com.directus.AbstractBaseException
 import com.directus.domain.model.ErrorCode

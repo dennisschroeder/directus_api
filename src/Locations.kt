@@ -14,3 +14,7 @@ data class UserIds(val ids: String)
 @KtorExperimentalLocationsAPI
 @Location("/{id}")
 data class UserId(val id: Int)
+
+@KtorExperimentalLocationsAPI
+@Location("/invite/{token}")
+data class InvitationToken(val token: String)

@@ -1,4 +1,4 @@
-package com.directus.endpoint
+package endpoints
 
 import io.ktor.routing.Route
 import io.ktor.routing.route
