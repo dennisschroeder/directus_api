@@ -2,6 +2,7 @@ package com.directus.endpoints.users
 
 import com.directus.*
 import com.directus.auth.AuthService
+import com.directus.config.ConfigService
 import com.directus.domain.model.InvitationMailReceiver
 import com.directus.domain.model.User
 import com.directus.domain.model.UserReceiver
@@ -140,7 +141,6 @@ fun Route.users() {
                     }
                 }
 
-
                 val invitationToken =
                     AuthService.signInvitationToken(
                         invitingUser.id.value,
@@ -168,11 +168,11 @@ fun Route.users() {
             }
 
             if (invitationUserData is ArrayList<*>) {
-                val users = invitationUserData.mapNotNull { mail ->
+                invitationUserData.mapNotNull { mail ->
                     inviteUser(mail.toString(), invitingUser)
                 }
 
-                call.successResponse(HttpStatusCode.OK, users)
+                call.successResponse(HttpStatusCode.OK, "Users invited!")
                 return@post
             }
         }
