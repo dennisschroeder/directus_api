@@ -5,12 +5,12 @@ import com.directus.auth.exception.NoProjectKeyException
 import com.directus.auth.jwt
 import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.service.UserService
-import com.directus.endpoint.auth.authentication
-import com.directus.endpoint.auth.failedAuth
-import com.directus.endpoint.exception.BadRequestException
-import com.directus.endpoint.root
-import com.directus.endpoint.users.users
+import com.directus.endpoints.auth.authentication
+import com.directus.endpoints.auth.failedAuth
+import com.directus.endpoints.exception.BadRequestException
+import com.directus.endpoints.users.users
 import com.directus.repository.database.DatabaseService
+import endpoints.root
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call

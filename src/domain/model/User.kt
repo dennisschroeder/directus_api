@@ -81,7 +81,7 @@ data class UserReceiver (
 
     )
 
-data class InvitationUserReceiver(val email: Any)
+data class InvitationMailReceiver(val email: Any)
 
 enum class UserStatus(val value: String) {
     DRAFT("draft"),
