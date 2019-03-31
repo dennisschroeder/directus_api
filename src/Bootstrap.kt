@@ -3,6 +3,7 @@ package com.directus
 import com.auth0.jwt.algorithms.Algorithm
 import com.charleskorn.kaml.Yaml
 import com.directus.auth.AuthService
+import com.directus.config.ConfigService
 import com.directus.config.ProjectConfig
 import com.directus.domain.model.Settings
 import com.directus.domain.model.UserStatus

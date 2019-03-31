@@ -1,6 +1,4 @@
-package com.directus
-
-import com.directus.config.ProjectConfig
+package com.directus.config
 
 object ConfigService {
     val configs = hashMapOf<String, ProjectConfig>()

@@ -3,6 +3,7 @@ package com.directus
 import com.directus.auth.AuthService
 import com.directus.auth.exception.NoProjectKeyException
 import com.directus.auth.jwt
+import com.directus.config.ConfigService
 import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.service.UserService
 import com.directus.endpoints.auth.authentication
@@ -68,7 +69,7 @@ fun Application.main(testing: Boolean = false) {
                             ConfigService.configs[credentials.projectKey]?.auth!!.privateKey -> null
                     else -> credentials.payload.getClaim("userId").asInt().let { userId ->
                         DatabaseService.asyncTransaction(credentials.projectKey) {
-                            UserService.getUser(userId)
+                            UserService.getActiveUser(userId)
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 package com.directus.mail
 
-import com.directus.ConfigService
+import com.directus.config.ConfigService
 import org.simplejavamail.email.Email
 import org.simplejavamail.email.EmailBuilder
 import org.simplejavamail.email.EmailPopulatingBuilder

@@ -4,15 +4,12 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTCreator
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
-import com.directus.ConfigService
+import com.directus.config.ConfigService
 import com.directus.domain.model.User
 import java.util.*
 import kotlin.collections.HashMap
 
 object AuthService {
-    private const val default = 60_000 * 5// 60 minute
-    private const val passwordRequest = 60_000 * 60 * 24 * 7 // 1 week
-    private const val invitationRequest = 60_000 * 60 * 24 * 7 // 1 week
 
     // We need one algorithm per project.
     // The algorithms are set in the boot module
@@ -33,7 +30,7 @@ object AuthService {
         signToken(projectKey) {
             withClaim("type", "auth")
             withClaim("userId", userID)
-            withExpiresAt(getExpiration(passwordRequest))
+            withExpiresAt(getExpiration(TokenExpiration.FIVE_MINUTES.date))
         }
 
 
@@ -42,7 +39,7 @@ object AuthService {
             withClaim("type", "reset_password")
             withClaim("userId", user.id.value)
             withClaim("email", user.email)
-            withExpiresAt(getExpiration(passwordRequest))
+            withExpiresAt(getExpiration(TokenExpiration.ONE_WEEK.date))
         }
 
 
@@ -53,7 +50,7 @@ object AuthService {
             withClaim("sender", senderId)
             withClaim("email", email)
             withClaim("date", Date(System.currentTimeMillis()))
-            withExpiresAt(getExpiration(invitationRequest))
+            withExpiresAt(getExpiration(TokenExpiration.ONE_WEEK.date))
         }
 
 

@@ -1,11 +1,12 @@
 package com.directus.endpoints.auth
 
 import com.auth0.jwt.exceptions.TokenExpiredException
-import com.directus.*
+import com.directus.ResetPassword
 import com.directus.auth.AuthService
 import com.directus.auth.AuthToken
 import com.directus.auth.PasswordResetToken
 import com.directus.auth.exception.NoProjectKeyException
+import com.directus.config.ConfigService
 import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.model.Credentials
 import com.directus.domain.model.User
@@ -15,8 +16,11 @@ import com.directus.endpoints.auth.exception.ExpiredTokenException
 import com.directus.endpoints.auth.exception.InvalidCredentialsException
 import com.directus.endpoints.auth.exception.UserNotFoundException
 import com.directus.endpoints.exception.BadRequestException
+import com.directus.errorResponse
 import com.directus.mail.MailService
+import com.directus.projectKey
 import com.directus.repository.database.asyncTransaction
+import com.directus.successResponse
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authentication
@@ -122,4 +126,4 @@ fun StatusPages.Configuration.failedAuth() {
  * Adds the authenticated user to the call pipeline
  * The user can be accessed with "call.user"!
  */
-val ApplicationCall.user get() = authentication.principal<User>()!!
+val ApplicationCall.user get() = authentication.principal<User>() ?: throw UserNotFoundException("User not found!")
