@@ -1,22 +1,17 @@
 package com.directus.endpoints.auth
 
-import com.auth0.jwt.exceptions.TokenExpiredException
 import com.directus.ResetPassword
 import com.directus.auth.AuthService
 import com.directus.auth.AuthToken
 import com.directus.auth.PasswordResetToken
-import com.directus.auth.exception.NoProjectKeyException
 import com.directus.config.ConfigService
-import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.model.Credentials
 import com.directus.domain.model.User
 import com.directus.domain.service.UserService
 import com.directus.domain.service.UtilService
-import com.directus.endpoints.auth.exception.ExpiredTokenException
 import com.directus.endpoints.auth.exception.InvalidCredentialsException
 import com.directus.endpoints.auth.exception.UserNotFoundException
 import com.directus.endpoints.exception.BadRequestException
-import com.directus.errorResponse
 import com.directus.mail.MailService
 import com.directus.projectKey
 import com.directus.repository.database.asyncTransaction
@@ -24,7 +19,6 @@ import com.directus.successResponse
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.auth.authentication
-import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.get
@@ -71,7 +65,7 @@ fun Route.authentication() {
             val body = call.receive<Map<String, String>>()
             val email = body["email"] ?: throw BadRequestException("Missing email address")
             val user = call.asyncTransaction {
-                UserService.getUserByEmail(email) ?: throw UserNotFoundException("User not found!")
+                UserService.getActiveUserByEmail(email) ?: throw UserNotFoundException("User not found!")
             }
 
             val projectKey = call.projectKey
@@ -107,19 +101,6 @@ fun Route.authentication() {
             call.successResponse(HttpStatusCode.OK, token)
         }
     }
-}
-
-fun StatusPages.Configuration.failedAuth() {
-    exception<InvalidCredentialsException> { call.errorResponse(it) }
-
-    exception<UserNotFoundException> { call.errorResponse(it) }
-
-    exception<TokenExpiredException> { throw ExpiredTokenException(it.message!!) }
-    exception<ExpiredTokenException>  { call.errorResponse(it) }
-
-    exception<NoProjectKeyException>  { call.errorResponse(it) }
-
-    exception<ApiConfigurationNotFoundException>  { call.errorResponse(it) }
 }
 
 /**

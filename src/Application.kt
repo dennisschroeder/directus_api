@@ -1,5 +1,6 @@
 package com.directus
 
+import com.auth0.jwt.exceptions.TokenExpiredException
 import com.directus.auth.AuthService
 import com.directus.auth.exception.NoProjectKeyException
 import com.directus.auth.jwt
@@ -7,8 +8,7 @@ import com.directus.config.ConfigService
 import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.service.UserService
 import com.directus.endpoints.auth.authentication
-import com.directus.endpoints.auth.failedAuth
-import com.directus.endpoints.exception.BadRequestException
+import com.directus.endpoints.auth.exception.ExpiredTokenException
 import com.directus.endpoints.users.users
 import com.directus.repository.database.DatabaseService
 import endpoints.root
@@ -55,9 +55,8 @@ fun Application.main(testing: Boolean = false) {
     }
 
     install(StatusPages) {
-        exception<BadRequestException> { call.errorResponse(it) }
-
-        failedAuth()
+        exception<TokenExpiredException> { throw ExpiredTokenException(it.message!!) }
+        exception<AbstractBaseException> { call.errorResponse(it) }
     }
 
     install(Authentication) {
