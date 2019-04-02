@@ -12,6 +12,8 @@ import io.ktor.locations.Location
 @KtorExperimentalLocationsAPI
 @Location("/{id}") data class UserId(val id: Int) {
     @Location("/tracking/page") data class TrackingPage(val userId: UserId)
+    @Location("/revisions") data class Revisions(val userId: UserId)
+    @Location("/revisions/{offset}") data class RevisionsOffset(val userId: UserId, val offset: Int)
 }
 
 @KtorExperimentalLocationsAPI
