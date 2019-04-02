@@ -24,35 +24,59 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.boot(testing: Boolean = false) {
 
-    val resources = File("resources/").takeIf { it.exists() } ?: throw Exception("Resource directory not found")
-    resources
-        .walk()
-        .forEach { file ->
-            file.takeIf { it.isFile }
-                ?.takeIf { it.name.endsWith(".yaml") && it.name.startsWith("api") }
-                ?.apply {
-                    val projectKey =
-                        if (nameWithoutExtension.substringAfter('.') != "api")
-                            nameWithoutExtension.substringAfter('.') else "_"
-                    val fileContent = File("${resources.absolutePath}/$name").readText()
+    val testConfigFile = "api.test.yaml"
 
-                    // Initializing the project settings by project scope
-                    ConfigService.configs[projectKey] = Yaml.default.parse(ProjectConfig.serializer(), fileContent)
+    if (testing) {
+        val testProjectKey = "test"
+        val testConfig =
+            File("resources/$testConfigFile").takeIf { it.exists() } ?: throw Exception("$testConfigFile not found")
+        ConfigService.configs[testProjectKey] = Yaml.default.parse(ProjectConfig.serializer(), testConfig.readText())
 
-                    AuthService.algorithms[projectKey] =
-                        Algorithm.HMAC256(ConfigService.configs[projectKey]!!.auth.secretKey)
+        AuthService.algorithms[testProjectKey] =
+            Algorithm.HMAC256(ConfigService.configs[testProjectKey]!!.auth.secretKey)
 
-                    DatabaseService.connections[projectKey] = DatabaseService.initMysql(
-                        DatabaseService.buildSqlConfig(
-                            host = ConfigService.configs[projectKey]!!.database.host,
-                            port = ConfigService.configs[projectKey]!!.database.port,
-                            dbName = ConfigService.configs[projectKey]!!.database.name,
-                            username = ConfigService.configs[projectKey]!!.database.username,
-                            password = ConfigService.configs[projectKey]!!.database.password
+        val dbSource = DatabaseService.buildSqlConfig(
+            host = ConfigService.configs[testProjectKey]!!.database.host,
+            port = ConfigService.configs[testProjectKey]!!.database.port,
+            dbName = ConfigService.configs[testProjectKey]!!.database.name,
+            username = ConfigService.configs[testProjectKey]!!.database.username,
+            password = ConfigService.configs[testProjectKey]!!.database.password
+        )
+
+        DatabaseService.connections[testProjectKey] = DatabaseService.initMysql(dbSource)
+
+
+    } else {
+        val resources = File("resources/").takeIf { it.exists() } ?: throw Exception("Resource directory not found")
+        resources
+            .walk()
+            .forEach { file ->
+                file.takeIf { it.isFile }
+                    ?.takeIf { it.name.endsWith(".yaml") && it.name.startsWith("api") && it.name != testConfigFile }
+                    ?.apply {
+                        val projectKey =
+                            if (nameWithoutExtension.substringAfter('.') != "api")
+                                nameWithoutExtension.substringAfter('.') else "_"
+                        val fileContent = File("${resources.absolutePath}/$name").readText()
+
+                        // Initializing the project settings by project scope
+                        ConfigService.configs[projectKey] = Yaml.default.parse(ProjectConfig.serializer(), fileContent)
+
+                        AuthService.algorithms[projectKey] =
+                            Algorithm.HMAC256(ConfigService.configs[projectKey]!!.auth.secretKey)
+
+                        DatabaseService.connections[projectKey] = DatabaseService.initMysql(
+                            DatabaseService.buildSqlConfig(
+                                host = ConfigService.configs[projectKey]!!.database.host,
+                                port = ConfigService.configs[projectKey]!!.database.port,
+                                dbName = ConfigService.configs[projectKey]!!.database.name,
+                                username = ConfigService.configs[projectKey]!!.database.username,
+                                password = ConfigService.configs[projectKey]!!.database.password
+                            )
                         )
-                    )
-                }
-        }
+                    }
+            }
+    }
 
     DatabaseService.createTables(Users, Settings)
 
@@ -70,6 +94,5 @@ fun Application.boot(testing: Boolean = false) {
             }
         }
     }
-
 }
 

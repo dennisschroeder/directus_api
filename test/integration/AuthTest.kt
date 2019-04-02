@@ -1,82 +1,88 @@
 package integration
 
 import com.directus.auth.AuthService
+import com.directus.boot
+import com.directus.domain.model.ErrorCode
 import com.directus.domain.service.UserService
+import com.directus.main
+import com.directus.repository.database.DatabaseService
+import com.google.gson.Gson
+import integration.util.AuthToken
+import integration.util.Error
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
-import org.jetbrains.exposed.sql.transactions.transaction
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import io.ktor.server.testing.withTestApplication
+import org.mindrot.jbcrypt.BCrypt
+import kotlin.test.*
 
 class AuthTest {
 
-    private val projectKey = "_"
+    private val pk = "test"
     private val defaultAdminMail = "admin@example.com"
+    private val defaultAdminPassword = "password"
+
+    @BeforeTest
+    fun boot() = withTestApplication({ boot(testing = true) }) {}
 
     @Test
-    fun testPingResponse() = testApp {
-        handleRequest(HttpMethod.Get, "server/ping").apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertEquals("pong", response.content)
+    fun testAuthenticate(): Unit =
+
+        withTestApplication({ main(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/$pk/auth/authenticate") {
+                addHeader("Content-Type", "application/json")
+                setBody(
+                    """
+                        {
+                          "email": $defaultAdminMail,
+                          "password": $defaultAdminPassword
+                        }
+                    """.trimIndent()
+                )
+            }.run {
+                assertEquals(HttpStatusCode.OK, response.status())
+                val response = Gson().fromJson<AuthToken>(response.content, AuthToken::class.java)
+                val id = AuthService.verifier(pk).verify(response.data.token).getClaim("userId").asInt()
+                val user = DatabaseService.transaction(pk) {
+                    UserService.getActiveUser(id)
+                } ?: fail("User not found")
+
+                assertEquals(defaultAdminMail, user.email)
+                assertTrue(BCrypt.checkpw(defaultAdminPassword, user.password))
+            }
+
+            handleRequest(HttpMethod.Post, "/$pk/auth/authenticate") {
+                addHeader("Content-Type", "application/json")
+                setBody(
+                    """
+                        {
+                          "email": $defaultAdminMail,
+                          "password": wrongPassword
+                        }
+                    """.trimIndent()
+                )
+            }.run {
+                val response = Gson().fromJson<Error>(response.content, Error::class.java)
+
+                assertEquals(ErrorCode.INVALID_CREDENTIALS.internalCode, response.code)
+                assertEquals("Wrong Credentials", response.message)
+            }
         }
-    }
 
     @Test
-    fun testRootResponse() = testApp {
-        handleRequest(HttpMethod.Get, "/").apply {
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertEquals("Serving application information soon...", response.content)
+    fun testRefreshToken(): Unit =
+
+        withTestApplication({ main(testing = true) }) {
+            handleRequest(HttpMethod.Post, "/$pk/auth/refresh") {
+                addHeader("Content-Type", "application/json")
+                setBody(
+                    """
+                        {
+                          "token": $defaultAdminMail,
+                        }
+                    """.trimIndent()
+                )
+            }
         }
-    }
-
-
-    @Test
-    fun testAuthenticate() = testApp {
-        handleRequest(HttpMethod.Post, "/$projectKey/auth/authenticate") {
-            setBody("""{"email": $defaultAdminMail, "password": password}""")
-
-        }.apply {
-
-            val mockedUser = transaction { UserService.getUserByEmail(defaultAdminMail)!! }
-            val mockedAuthToken = AuthService.signAuthToken(mockedUser, projectKey)
-
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertEquals(response.content, mockedAuthToken)
-        }
-    }
-
-    @Test
-    fun testRefreshToken() = testApp {
-        handleRequest(HttpMethod.Post, "/$projectKey/auth/refresh") {
-            val mockedUser = transaction { UserService.getUserByEmail(defaultAdminMail)!! }
-            val mockedAuthToken = AuthService.signAuthToken(mockedUser, projectKey)
-
-            setBody("""{"token": $mockedAuthToken}""")
-
-        }.apply {
-            val mockedUser = transaction { UserService.getUserByEmail(defaultAdminMail)!! }
-            val mockedAuthToken = AuthService.signAuthToken(mockedUser, projectKey)
-
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertEquals(response.content, mockedAuthToken)
-        }
-    }
-
-    @Test
-    fun testRequestNewPassword() = testApp {
-        handleRequest(HttpMethod.Post, "/$projectKey/auth/refresh") {
-
-            setBody("""{"email": $defaultAdminMail}""")
-
-        }.apply {
-            val mockedUser = transaction { UserService.getUserByEmail(defaultAdminMail)!! }
-            val mockedAuthToken = AuthService.signAuthToken(mockedUser, projectKey)
-
-            assertEquals(HttpStatusCode.OK, response.status())
-            assertEquals(response.content, mockedAuthToken)
-        }
-    }
-
 }
