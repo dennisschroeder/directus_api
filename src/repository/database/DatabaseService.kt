@@ -9,6 +9,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 
 // @ToDo: Refactor to a more Kotlinesque style
@@ -50,12 +52,14 @@ object DatabaseService {
 
     fun <Query> transaction(projectKey: String, query: () -> Query) =
         transaction(connections[projectKey]) {
+            addLogger(StdOutSqlLogger)
             query()
         }
 
     suspend fun <Query> asyncTransaction(projectKey: String, query: () -> Query) =
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.Default) {
             transaction(connections[projectKey]) {
+                addLogger(StdOutSqlLogger)
                 query()
             }
         }
