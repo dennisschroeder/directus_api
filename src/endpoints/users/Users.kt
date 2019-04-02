@@ -3,10 +3,7 @@ package com.directus.endpoints.users
 import com.directus.*
 import com.directus.auth.AuthService
 import com.directus.config.ConfigService
-import com.directus.domain.model.InvitationMailReceiver
-import com.directus.domain.model.User
-import com.directus.domain.model.UserReceiver
-import com.directus.domain.model.UserStatus
+import com.directus.domain.model.*
 import com.directus.domain.service.UserService
 import com.directus.endpoints.auth.exception.UserNotFoundException
 import com.directus.endpoints.auth.user
@@ -111,8 +108,7 @@ fun Route.users() {
                 user
             }
 
-
-            call.successResponse(HttpStatusCode.OK, patchedUser)
+            call.response.status(HttpStatusCode.OK)
         }
 
         delete<UserIds> { userIds ->
@@ -163,7 +159,7 @@ fun Route.users() {
 
             if (invitationUserData is String) {
                 inviteUser(invitationUserData, invitingUser)
-                call.successResponse(HttpStatusCode.OK, null)
+                call.response.status(HttpStatusCode.OK)
                 return@post
             }
 
@@ -172,7 +168,7 @@ fun Route.users() {
                     inviteUser(mail.toString(), invitingUser)
                 }
 
-                call.successResponse(HttpStatusCode.OK, null)
+                call.response.status(HttpStatusCode.OK)
                 return@post
             }
         }
@@ -196,14 +192,19 @@ fun Route.users() {
                 user.status = UserStatus.ACTIVE.value
             }
 
-            call.successResponse(HttpStatusCode.OK, null)
+            call.response.status(HttpStatusCode.OK)
         }
 
-        patch<UserId.TrackingPage> { userId ->
-            userId.userId
+        patch<UserId.TrackingPage> {
+            val payload = call.receive<TrackUserReceiver>()
 
+            call.asyncTransaction {
+                UserService.getActiveUser(it.userId.id)!!.apply {
+                    lastPage = payload.last_page
+                }
+            }
+
+            call.response.status(HttpStatusCode.OK)
         }
-
-
     }
 }

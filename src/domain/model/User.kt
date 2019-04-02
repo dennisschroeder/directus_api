@@ -83,6 +83,8 @@ data class UserReceiver (
 
 data class InvitationMailReceiver(val email: Any)
 
+data class TrackUserReceiver(val last_page: String)
+
 enum class UserStatus(val value: String) {
     DRAFT("draft"),
     INVITED("invited"),

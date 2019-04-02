@@ -11,7 +11,7 @@ import com.directus.endpoints.auth.authentication
 import com.directus.endpoints.auth.exception.ExpiredTokenException
 import com.directus.endpoints.users.users
 import com.directus.repository.database.DatabaseService
-import endpoints.root
+import endpoints.project
 import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
@@ -28,9 +28,9 @@ import io.ktor.http.HttpMethod
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.response.respondText
-import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.routing.route
+import io.ktor.routing.routing
 import io.ktor.util.KtorExperimentalAPI
 
 @KtorExperimentalAPI
@@ -86,7 +86,7 @@ fun Application.main(testing: Boolean = false) {
         }
     }
 
-    install(Routing) {
+    routing {
         get("/") {
             call.respondText { "Serving application information soon..." }
         }
@@ -94,8 +94,8 @@ fun Application.main(testing: Boolean = false) {
         get("/server/ping") {
             call.respondText { "pong" }
         }
-
-        root("{projectKey}") {
+        
+        project {
             route("/auth") {
                 authentication()
             }

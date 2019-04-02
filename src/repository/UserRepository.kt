@@ -1,6 +1,7 @@
 package com.directus.repository
 
 import com.directus.domain.model.User
+import com.directus.domain.model.UserStatus
 import com.directus.domain.model.Users
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
@@ -18,6 +19,6 @@ object UserRepository : RepositoryInterface<User> {
     }.singleOrNull()
 
     fun getActiveById(id: Int) = User.find {
-        (Users.id eq id) and (Users.status eq "active")
+        (Users.id eq id) and (Users.status eq UserStatus.ACTIVE.value)
     }.singleOrNull()
 }
