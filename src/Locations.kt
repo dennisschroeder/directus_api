@@ -12,8 +12,9 @@ data class ResetPassword(val resetToken: String)
 data class UserIds(val ids: String)
 
 @KtorExperimentalLocationsAPI
-@Location("/{id}")
-data class UserId(val id: Int)
+@Location("/{id}") data class UserId(val id: Int) {
+    @Location("/tracking/page") data class TrackingPage(val userId: UserId)
+}
 
 @KtorExperimentalLocationsAPI
 @Location("/invite/{token}")

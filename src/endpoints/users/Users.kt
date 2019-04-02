@@ -163,7 +163,7 @@ fun Route.users() {
 
             if (invitationUserData is String) {
                 inviteUser(invitationUserData, invitingUser)
-                call.successResponse(HttpStatusCode.OK, "User invited!")
+                call.successResponse(HttpStatusCode.OK, null)
                 return@post
             }
 
@@ -172,7 +172,7 @@ fun Route.users() {
                     inviteUser(mail.toString(), invitingUser)
                 }
 
-                call.successResponse(HttpStatusCode.OK, "Users invited!")
+                call.successResponse(HttpStatusCode.OK, null)
                 return@post
             }
         }
@@ -187,6 +187,23 @@ fun Route.users() {
             val invitationUserEmail =
                 token.getClaim("email").asString()
                     ?: throw InvalidTokenException("Claim missing!")
+
+
+            call.asyncTransaction {
+                val user = UserService.getUserByEmail(invitationUserEmail)
+                    ?: throw UserNotFoundException("Invited user not found!")
+
+                user.status = UserStatus.ACTIVE.value
+            }
+
+            call.successResponse(HttpStatusCode.OK, null)
         }
+
+        patch<UserId.TrackingPage> { userId ->
+            userId.userId
+
+        }
+
+
     }
 }

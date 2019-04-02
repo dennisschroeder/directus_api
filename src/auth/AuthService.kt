@@ -6,6 +6,7 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.directus.config.ConfigService
 import com.directus.domain.model.User
+import com.directus.domain.model.UserStatus
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -45,7 +46,7 @@ object AuthService {
 
     fun signInvitationToken(senderId: Int, userID: Int, email: String, projectKey: String) =
         signToken(projectKey) {
-            withClaim("type", "invitation")
+            withClaim("type", UserStatus.INVITED.value)
             withClaim("id", userID)
             withClaim("sender", senderId)
             withClaim("email", email)
@@ -56,5 +57,7 @@ object AuthService {
 
     fun getExpiration(timeInMilliseconds: Int) = Date(System.currentTimeMillis() + timeInMilliseconds)
     fun getPrivateKeyForProject(projectKey: String) = ConfigService.configs[projectKey]?.auth!!.privateKey
+
+
 }
 

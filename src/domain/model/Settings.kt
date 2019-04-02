@@ -10,7 +10,7 @@ import org.jetbrains.exposed.dao.IntIdTable
 
 object Settings: IntIdTable("directus_setting") {
     val key = varchar("key", 64).uniqueIndex()
-    val value = text("value").uniqueIndex()
+    val value = text("value")
 }
 
 @JsonAdapter(ExposedTypeAdapter::class)

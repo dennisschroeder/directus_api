@@ -8,6 +8,7 @@ object UserService {
     fun getActiveUser(id : Int) = UserRepository.getActiveById(id)
     fun getUsers() = UserRepository.getAll()
     fun getUserByEmail(email: String) = UserRepository.findByEmail(email)
+    fun getActiveUserByEmail(email: String) = UserRepository.findActiveByEmail(email)
 
     fun createUser(fields: User.() -> Unit) =  User.new(init = fields)
     fun deleteUser(id: Int) = UserRepository.remove(id)
