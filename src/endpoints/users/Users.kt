@@ -203,8 +203,15 @@ fun Route.users() {
                     lastPage = payload.last_page
                 }
             }
-
             call.response.status(HttpStatusCode.OK)
+        }
+
+        get<UserId.Revisions> {
+
+        }
+
+        get<UserId.RevisionsOffset> {
+
         }
     }
 }
