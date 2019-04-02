@@ -5,9 +5,7 @@ import com.charleskorn.kaml.Yaml
 import com.directus.auth.AuthService
 import com.directus.config.ConfigService
 import com.directus.config.ProjectConfig
-import com.directus.domain.model.Settings
-import com.directus.domain.model.UserStatus
-import com.directus.domain.model.Users
+import com.directus.domain.model.*
 import com.directus.domain.service.UserService
 import com.directus.repository.database.DatabaseService
 import io.ktor.application.Application
@@ -78,7 +76,14 @@ fun Application.boot(testing: Boolean = false) {
             }
     }
 
-    DatabaseService.createTables(Users, Settings)
+    DatabaseService.createTables(
+        Users,
+        Roles,
+        Settings,
+        Activities,
+        Collections,
+        Revisions
+    )
 
     launch {
         DatabaseService.connections.forEach {
