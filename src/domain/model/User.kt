@@ -13,21 +13,21 @@ import org.mindrot.jbcrypt.BCrypt
 
 object Users : IntIdTable("directus_user") {
     val status = varchar("status", 16).default(UserStatus.DRAFT.value)
-    val firstName = varchar("firstName", 50).nullable()
-    val lastName = varchar("lastName", 50).nullable()
+    val firstName = varchar("first_name", 50).nullable()
+    val lastName = varchar("last_name", 50).nullable()
     val email = varchar("email", 255).uniqueIndex()
     val password = varchar("password", 255)
     val token = varchar("token", 255).nullable()
     val timezone = varchar("timezone", 32).default("UTC")
     val locale = varchar("locale", 8).default("en-US")
-    val localeOptions = text("localeOptions").nullable()
+    val localeOptions = text("locale_options").nullable()
     val avatar = integer("avatar").nullable()
     val company = varchar("company", 191).nullable()
     val title = varchar("title", 191).nullable()
-    val emailNotifications = bool("emailNotifications").default(true)
-    val lastAccessOn = datetime("lastAccessOn").nullable()
-    val lastPage = varchar("lastPage", 191).nullable()
-    val externalId = varchar("externalId", 255).uniqueIndex().nullable()
+    val emailNotifications = bool("email_notifications").default(true)
+    val lastAccessOn = datetime("last_access_on").nullable()
+    val lastPage = varchar("last_page", 191).nullable()
+    val externalId = varchar("external_id", 255).uniqueIndex().nullable()
 
 }
 
