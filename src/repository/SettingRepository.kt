@@ -5,7 +5,7 @@ import com.directus.domain.model.Settings
 import org.jetbrains.exposed.sql.deleteWhere
 import repository.RepositoryInterface
 
-object SettingsRepository: RepositoryInterface<Setting> {
+object SettingRepository: RepositoryInterface<Setting> {
     override fun remove(id: Int) = Settings.deleteWhere { Settings.id eq id }
 
     override fun getById(id: Int) = Setting.findById(id)
