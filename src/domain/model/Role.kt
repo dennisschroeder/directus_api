@@ -26,6 +26,8 @@ open class Role(id: EntityID<Int>) : IntEntity(id) {
     var ipWhitelist by Roles.ipWhitelist
     var navBlacklist by Roles.navBlacklist
     var externalId by Roles.externalId
+
+    var users by User via UserRoles
 }
 
 data class RoleReceiver(
