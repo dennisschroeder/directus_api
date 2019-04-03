@@ -8,11 +8,11 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
 
-object Roles: IntIdTable("directus_roles") {
+object Roles : IntIdTable("directus_roles") {
     val name = varchar("name", 100)
-    val description = varchar("description", 500)
-    val ipWhitelist = text("ip_whitelist")
-    val navBlacklist = text("nav_blacklist")
+    val description = varchar("description", 500).nullable()
+    val ipWhitelist = text("ip_whitelist").nullable()
+    val navBlacklist = text("nav_blacklist").nullable()
     val externalId = Users.varchar("external_id", 255).uniqueIndex().nullable()
 }
 
@@ -28,3 +28,9 @@ open class Role(id: EntityID<Int>) : IntEntity(id) {
     var externalId by Roles.externalId
 }
 
+data class RoleReceiver(
+    val name: String?,
+    val description: String?,
+    val ipWhitelist: String?,
+    val navBlacklist: String?
+)

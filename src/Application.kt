@@ -9,6 +9,7 @@ import com.directus.config.exception.ApiConfigurationNotFoundException
 import com.directus.domain.service.UserService
 import com.directus.endpoints.auth.authentication
 import com.directus.endpoints.auth.exception.ExpiredTokenException
+import com.directus.endpoints.role.roles
 import com.directus.endpoints.users.users
 import com.directus.repository.database.DatabaseService
 import endpoints.project
@@ -94,7 +95,7 @@ fun Application.main(testing: Boolean = false) {
         get("/server/ping") {
             call.respondText { "pong" }
         }
-        
+
         project {
             route("/auth") {
                 authentication()
@@ -102,6 +103,7 @@ fun Application.main(testing: Boolean = false) {
 
             authenticate {
                 users()
+                roles()
             }
         }
     }
