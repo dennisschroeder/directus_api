@@ -58,7 +58,14 @@ open class User(id: EntityID<Int>) : IntEntity(id), Principal {
     var lastPage by Users.lastPage
     var externalId by Users.externalId
 
+    var roles by Role via UserRoles
+
     fun authenticate(rawPassword: String) = BCrypt.checkpw(rawPassword, password)
+}
+
+object UserRoles : IntIdTable("directus_user_roles") {
+    val user = reference("user", Users).uniqueIndex()
+    val role = reference("role", Roles).uniqueIndex()
 }
 
 data class UserReceiver (

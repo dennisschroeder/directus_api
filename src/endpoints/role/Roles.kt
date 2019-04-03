@@ -11,19 +11,19 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.request.receive
 import io.ktor.routing.Route
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import kotlinx.coroutines.launch
 
 @KtorExperimentalLocationsAPI
 fun Route.roles() {
-
     route("/roles") {
         post {
 
             val payload = runCatching { call.receive<Any>() }
 
-            payload.onSuccess { roles  ->
+            payload.onSuccess { roles ->
                 call.asyncTransaction {
                     if (roles is ArrayList<*>) {
                         roles.forEach { role ->
@@ -36,7 +36,6 @@ fun Route.roles() {
                         launch {
                             call.response.status(HttpStatusCode.OK)
                         }
-
                         return@asyncTransaction
                     }
 
@@ -48,7 +47,6 @@ fun Route.roles() {
                         launch {
                             call.response.status(HttpStatusCode.OK)
                         }
-
                         return@asyncTransaction
                     }
                 }
@@ -57,6 +55,10 @@ fun Route.roles() {
             payload.onFailure {
                 throw BadRequestException("Missing or wrong payload!")
             }
+        }
+
+        get {
+
         }
     }
 }

@@ -9,11 +9,11 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
 
 object Roles : IntIdTable("directus_roles") {
-    val name = varchar("name", 100)
+    val name = varchar("name", 100).uniqueIndex()
     val description = varchar("description", 500).nullable()
     val ipWhitelist = text("ip_whitelist").nullable()
     val navBlacklist = text("nav_blacklist").nullable()
-    val externalId = Users.varchar("external_id", 255).uniqueIndex().nullable()
+    val externalId = varchar("external_id", 255).uniqueIndex().nullable()
 }
 
 @JsonAdapter(ExposedTypeAdapter::class)

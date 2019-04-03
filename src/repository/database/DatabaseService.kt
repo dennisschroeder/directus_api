@@ -6,11 +6,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.ktor.application.ApplicationCall
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.exposed.dao.IntIdTable
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 // @ToDo: Refactor to a more Kotlinesque style
@@ -20,7 +16,7 @@ object DatabaseService {
 
     fun initMysql(dataSource: HikariDataSource) = Database.connect(dataSource)
 
-    fun createTables(vararg tables: IntIdTable) {
+    fun <T : Table> createTables(vararg tables: T) {
         connections.forEach { transaction(it.value) { SchemaUtils.create(*tables) } }
     }
 

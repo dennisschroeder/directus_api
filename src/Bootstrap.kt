@@ -6,11 +6,13 @@ import com.directus.auth.AuthService
 import com.directus.config.ConfigService
 import com.directus.config.ProjectConfig
 import com.directus.domain.model.*
+import com.directus.domain.service.RoleService
 import com.directus.domain.service.UserService
 import com.directus.repository.database.DatabaseService
 import io.ktor.application.Application
 import io.ktor.util.KtorExperimentalAPI
 import kotlinx.coroutines.launch
+import org.jetbrains.exposed.sql.SizedCollection
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.mindrot.jbcrypt.BCrypt
 import java.io.File
@@ -79,6 +81,7 @@ fun Application.boot(testing: Boolean = false) {
     DatabaseService.createTables(
         Users,
         Roles,
+        UserRoles,
         Settings,
         Activities,
         Collections,
@@ -86,16 +89,34 @@ fun Application.boot(testing: Boolean = false) {
     )
 
     launch {
-        DatabaseService.connections.forEach {
-            transaction(it.value) {
+        DatabaseService.connections.forEach { connection ->
+            val admin = transaction(connection.value) {
+                val role = RoleService.getRoleByName("Administrator")
+
+                when(role) {
+                    null -> RoleService.createRole {
+                        name = "Administrator"
+                        description = "Admins have access to all managed data within the system by default"
+                    }
+                    else -> role
+                }
+            }
+
+            val user = transaction(connection.value) {
                 val user = UserService.getUserByEmail("admin@example.com")
-                if (null === user) {
-                    UserService.createUser {
+
+                when(user) {
+                    null -> UserService.createUser {
                         email = "admin@example.com"
                         password = BCrypt.hashpw("password", BCrypt.gensalt())
                         status = UserStatus.ACTIVE.value
                     }
+                    else -> user
                 }
+            }
+
+            transaction(connection.value) {
+                user.roles = SizedCollection(listOf(admin))
             }
         }
     }

@@ -10,6 +10,7 @@ import java.util.*
 object RoleService {
     fun getRoles(): SizedIterable<Role> = RoleRepository.getAll()
     fun getRole(id: Int): Role? = RoleRepository.getById(id)
+    fun getRoleByName(name: String): Role? = RoleRepository.getByName(name)
     fun deleteRole(id: Int) = RoleRepository.remove(id)
 
     fun createRole(fields: Role.() -> Unit) =  Role.new(init = fields)

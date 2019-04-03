@@ -10,4 +10,6 @@ object RoleRepository : RepositoryInterface<Role> {
     override fun getById(id: Int): Role? = Role[id]
     override fun getAll(): SizedIterable<Role> = Role.all()
     override fun remove(id: Int): Int = Roles.deleteWhere { Roles.id eq id }
+
+    fun getByName(name: String) = Role.find { Roles.name eq name }.singleOrNull()
 }
