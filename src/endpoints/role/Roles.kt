@@ -4,6 +4,7 @@ import com.directus.domain.model.RoleReceiver
 import com.directus.domain.service.RoleService
 import com.directus.endpoints.exception.BadRequestException
 import com.directus.repository.database.asyncTransaction
+import com.directus.successResponse
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import io.ktor.application.call
@@ -58,7 +59,9 @@ fun Route.roles() {
         }
 
         get {
+            val roles = call.asyncTransaction { RoleService.getRoles().toList() }
 
+            call.successResponse(HttpStatusCode.OK, roles)
         }
     }
 }

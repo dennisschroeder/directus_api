@@ -64,8 +64,8 @@ open class User(id: EntityID<Int>) : IntEntity(id), Principal {
 }
 
 object UserRoles : IntIdTable("directus_user_roles") {
-    val user = reference("user", Users).uniqueIndex()
-    val role = reference("role", Roles).uniqueIndex()
+    var user = reference("user", Users).uniqueIndex()
+    var role = reference("role", Roles).uniqueIndex()
 }
 
 data class UserReceiver (
