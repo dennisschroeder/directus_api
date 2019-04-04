@@ -53,7 +53,7 @@ object DatabaseService {
         }
 
     suspend fun <Query> asyncTransaction(projectKey: String, query: () -> Query) =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             transaction(connections[projectKey]) {
                 addLogger(StdOutSqlLogger)
                 query()

@@ -116,7 +116,7 @@ fun Application.boot(testing: Boolean = false) {
             }
 
             transaction(connection.value) {
-                user.roles = SizedCollection(admin)
+                admin.users = SizedCollection(listOf(user))
             }
         }
     }

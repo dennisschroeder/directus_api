@@ -8,6 +8,7 @@ import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.IntIdTable
+import org.jetbrains.exposed.sql.Table
 import org.joda.time.DateTime
 import org.mindrot.jbcrypt.BCrypt
 
@@ -58,14 +59,12 @@ open class User(id: EntityID<Int>) : IntEntity(id), Principal {
     var lastPage by Users.lastPage
     var externalId by Users.externalId
 
-    var roles by Role via UserRoles
-
     fun authenticate(rawPassword: String) = BCrypt.checkpw(rawPassword, password)
 }
 
-object UserRoles : IntIdTable("directus_user_roles") {
-    var user = reference("user", Users).uniqueIndex()
-    var role = reference("role", Roles).uniqueIndex()
+object UserRoles : Table("directus_user_roles") {
+    var user = reference("user", Users).primaryKey(0)
+    var role = reference("role", Roles).primaryKey(1)
 }
 
 data class UserReceiver (
